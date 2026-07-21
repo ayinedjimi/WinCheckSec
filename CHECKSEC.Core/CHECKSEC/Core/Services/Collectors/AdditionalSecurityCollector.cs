@@ -594,30 +594,9 @@ public class AdditionalSecurityCollector : ISecurityCollector
 				Reference = "https://docs.microsoft.com/troubleshoot/windows-client/networking/configure-tcpip-networking"
 			};
 		});
-		ct.ThrowIfCancellationRequested();
-		TryAdd(results, delegate
-		{
-			int autoDoh = RegInt("HKLM", "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters", "EnableAutoDoh");
-			string currentValue = autoDoh switch
-			{
-				0 => "0 - Désactivé", 
-				1 => "1 - Automatique (si serveur supporte DoH)", 
-				2 => "2 - Forcé (DoH obligatoire)", 
-				_ => "Non configuré (comportement hérité)", 
-			};
-			bool isEnabled = autoDoh == 1 || autoDoh == 2;
-			return new SecurityResult
-			{
-				Category = Category,
-				CheckName = "DNS over HTTPS (DoH)",
-				CurrentValue = currentValue,
-				ExpectedValue = "1 (Automatique) ou 2 (Forcé)",
-				Status = ((!isEnabled) ? SecurityStatus.Info : SecurityStatus.OK),
-				Description = "DNS over HTTPS (DoH) chiffre les requêtes DNS, empêchant l'interception, la surveillance et la manipulation du trafic DNS par des attaquants sur le réseau local (attaques MITM DNS). Particulièrement important sur les réseaux Wi-Fi publics et les environnements non sécurisés.",
-				Recommendation = (isEnabled ? "DNS over HTTPS est configuré." : "Activer DoH via HKLM\\SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters\\EnableAutoDoh = 2 (forcé) ou configurer dans Paramètres > Réseau > DNS over HTTPS."),
-				Reference = "https://docs.microsoft.com/windows-server/networking/dns/doh-client-support"
-			};
-		});
+		// Correctif M1 : le résultat « DNS over HTTPS (DoH) » a été retiré d'ici.
+		// La détection DoH est consolidée dans DnsOverHttpsCollector, désormais seule source,
+		// afin d'éviter les sévérités contradictoires entre collecteurs.
 	}
 
 	private void CollectAntimalwareSecurity(List<SecurityResult> results, CancellationToken ct)

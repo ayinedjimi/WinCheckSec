@@ -96,9 +96,10 @@ Le rapport JSON (sauvegardé sur le Bureau) est conçu pour une **exploitation a
 - `CollectedAt` **par contrôle**, horodatage **ISO‑8601 / UTC** ;
 - **`AnalysisLog`** — journal d'exécution (statut/durée/nombre de résultats par collecteur) ;
 - **`Integrity`** — empreinte **SHA‑256** re‑vérifiable du rapport (non‑répudiation) ;
+- **Mapping MITRE ATT&CK** (`MitreTechniques` par contrôle + synthèse `MitreSummary` pour la couverture ATT&CK) ;
 - Détail MSCT (baseline vs réel), CIS par contrôle, vraies erreurs des journaux Windows.
 
-Autres formats : **PDF** (QuestPDF), **Excel** (ClosedXML), **HTML**, **CEF** (SIEM).
+Autres formats : **PDF** (QuestPDF), **Excel** (ClosedXML), **HTML**, **CEF** (SIEM), **SARIF 2.1.0** (CI/CD).
 
 ---
 

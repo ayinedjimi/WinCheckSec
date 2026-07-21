@@ -77,13 +77,15 @@ Légende : ✅ **livré** · 🚧 **en cours (vague 1)** · 📋 **planifié (va
 
 | Fonctionnalité | Statut |
 |---|---|
-| Scoring pondéré (Critique/Élevé/Moyen/Faible) | 📋 vague 2 |
-| **Mapping MITRE ATT&CK** par contrôle (ex. WDigest → T1003.001) | 📋 vague 2 |
-| Mapping référentiels (CIS ID, ANSSI BP28, NIST 800-53) | 📋 (CIS déjà mappé partiellement) |
-| Mode Diff / régression entre 2 scans | ✔️ Historique présent — à enrichir (diff détaillé) |
-| Corrélation de chaînes d'attaque (ex. SMB signing off + LLMNR on + NTLM faible) | 📋 vague 2 |
-| Export **SARIF** (CI/CD) | 📋 (JSON/PDF/Excel/HTML/CEF déjà présents) |
-| Profil machine (Workstation/Serveur/PAW) pour pondérer la sévérité | 📋 |
+| Scoring pondéré | ✔️ Déjà pondéré (`OK×1 + Warning×0.5 + Critical×0`) |
+| **Mapping MITRE ATT&CK** par contrôle (ex. WDigest → T1003.001) | ✅ livré (JSON : `MitreTechniques` par résultat + `MitreSummary`) |
+| Mapping référentiels (CIS ID, ANSSI BP28, NIST 800-53) | ✔️ CIS mappé · 📋 ANSSI/NIST |
+| Mode Diff / régression entre 2 scans | ✔️ Historique présent — 📋 diff détaillé check-à-check |
+| Corrélation de chaînes d'attaque | 📋 vague 3 |
+| Export **SARIF** (CI/CD) | ✅ livré (`--format sarif` + UI) |
+| Profil machine (Workstation/Serveur/PAW) | 📋 |
+
+> **Correctifs bug-review (v6.2.1+)** : H1 timeout, H3 LAPS, H4 User Rights, H5 score N/A/Error, M5 PS longueur — corrigés. M1 DoH consolidé, M2 PowerShellCollector mort supprimé, M4 Secure Boot harmonisé, M8 CSV RFC 4180, M9 enum DoH — corrigés.
 
 ---
 

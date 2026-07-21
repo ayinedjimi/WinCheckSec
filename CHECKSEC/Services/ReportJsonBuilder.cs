@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using CHECKSEC.Core.Models;
 using CHECKSEC.Core.Services;
+using CHECKSEC.Core.Services.Analysis;
 using CHECKSEC.Core.Services.Helpers;
 using EventLogEntry = CHECKSEC.Core.Models.EventLogEntry;
 
@@ -181,7 +182,11 @@ public static class ReportJsonBuilder
 				Description = x.Description,
 				Recommendation = x.Recommendation,
 				Reference = x.Reference,
-				CollectedAt = x.CollectedAt.ToString("o")
+				CollectedAt = x.CollectedAt.ToString("o"),
+				// Mapping MITRE ATT&CK dérivé du nom du contrôle et de sa catégorie (0..n techniques).
+				MitreTechniques = MitreMapper.Map(x.CheckName, x.Category)
+					.Select(t => new { t.Id, t.Name, t.Tactic })
+					.ToList()
 			}).ToList()
 		}).ToList();
 
@@ -196,6 +201,25 @@ public static class ReportJsonBuilder
 			Parameter = g.ValueName,
 			Value = g.CurrentValue
 		})).ToList();
+
+		// Synthèse MITRE ATT&CK : agrège, pour tous les résultats NON-OK (Warning/Critical/Error),
+		// le nombre de findings par technique. Alimente une vue « couverture ATT&CK » côté SOC.
+		// Placée AVANT AnalysisLog/Diagnostics afin d'être couverte par le hash Integrity (calculé en dernier).
+		report["MitreSummary"] = analysis.AllResults
+			.Where((SecurityResult r) => r.Status == SecurityStatus.Warning
+				|| r.Status == SecurityStatus.Critical
+				|| r.Status == SecurityStatus.Error)
+			.SelectMany((SecurityResult r) => MitreMapper.Map(r.CheckName, r.Category))
+			.GroupBy((MitreTechnique t) => t.Id)
+			.Select(g => new
+			{
+				Id = g.Key,
+				Name = g.First().Name,
+				Tactic = g.First().Tactic,
+				FindingCount = g.Count()
+			})
+			.OrderByDescending(x => x.FindingCount)
+			.ToList();
 
 		// Journal d'analyse : trace lisible de l'exécution (statut/durée/nb résultats par collecteur,
 		// collecteurs vides, diagnostics, totaux). Permet de vérifier, notamment en développement,
