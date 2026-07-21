@@ -4,7 +4,7 @@
 
 ### Windows 11 security posture auditor — fast, comprehensive, offline
 
-**664 checks · 49 collectors · MSCT & CIS baselines · SHA‑256 signed reports**
+**756 checks · 59 collectors · MSCT & CIS baselines · SHA‑256 signed reports**
 
 [![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white)](https://www.microsoft.com/windows/windows-11)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
@@ -33,7 +33,7 @@
 **CHECKSEC** performs a deep audit of a **Windows 11** machine's security configuration and compares it against the **Microsoft Security Compliance Toolkit (MSCT)** and **CIS Benchmark** baselines. It produces a score, a prioritized remediation plan, and reports designed for **post‑incident / compliance review**.
 
 - 🔒 **100% local & offline** — no data ever leaves the machine.
-- ⚡ **Fast** — 49 collectors run **in parallel**; a full scan takes seconds.
+- ⚡ **Fast** — 59 collectors run **in parallel**; a full scan takes seconds.
 - 📦 **Portable** — a single self‑contained `.exe` (no .NET install required).
 - 🧾 **Rich reports** — forensic JSON (SHA‑256 integrity hash), PDF, Excel, HTML, CEF (SIEM).
 
@@ -53,7 +53,7 @@
 | 🗂️ **Logs & Forensics** | Real Critical/Error Windows event log entries, log size/retention, key security events |
 | 💿 **Inventory** | Installed software (registry + **AppX/MSIX**), **risky / EOL** software, browser extensions, Sysmon |
 
-➡️ **Full list of the 664 checks: [`docs/CHECKS.md`](docs/CHECKS.md)**
+➡️ **Full list of the 756 checks: [`docs/CHECKS.md`](docs/CHECKS.md)** · 🗺️ [Roadmap](docs/ROADMAP.md)
 
 ---
 

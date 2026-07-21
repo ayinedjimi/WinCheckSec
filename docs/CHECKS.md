@@ -1,15 +1,31 @@
 # CHECKSEC — Liste complète des tests/contrôles
 
-Généré depuis un rapport réel. 49 collecteurs.
+_Généré depuis une analyse réelle. 59 collecteurs._
 
-## Accès distant (extra)  (5 résultats, 5 types de contrôle)
+## Accès distant (extra)  (5 résultats)
 - Assistance à distance — contrôle total / non sollicité
 - Assistance à distance (fAllowToGetHelp)
 - Service WinRM — état de démarrage (contexte)
 - WinRM Client — Basic Auth (AllowBasic)
 - WinRM Service — Basic Auth (AllowBasic)
 
-## Application Control  (21 résultats, 21 types de contrôle)
+## ACL Système de fichiers & Registre  (7 résultats)
+- ACL clé registre : HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+- ACL clé registre : HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+- ACL dossier système : C:\Program Files
+- ACL dossier système : C:\Program Files (xN)
+- ACL dossier système : C:\WINDOWS
+- ACL dossier système : C:\WINDOWS\systemN
+- ACL fichier hosts : C:\WINDOWS\systemN\drivers\etc\hosts
+
+## AMSI  (5 résultats)
+- AMSI: Désactivation via Windows Script (AmsiEnable)
+- AMSI: Intégrité des DLL des providers
+- AMSI: Patch mémoire runtime (non couvert)
+- AMSI: Provider Microsoft Defender
+- AMSI: Providers enregistrés
+
+## Application Control  (21 résultats)
 - AppLocker: AppID Service (AppIDSvc)
 - AppLocker: DLL Rules
 - AppLocker: Exe Enforcement Mode
@@ -32,7 +48,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - WDAC: CIPolicyActive Key
 - WDAC: CodeIntegrityPoliciesActive
 
-## Audit Policy  (37 résultats, 37 types de contrôle)
+## Audit Policy  (37 résultats)
 - Advanced Audit: Subcategory Override
 - Audit Policy Collection
 - Audit: Account Logon > Credential Validation
@@ -71,7 +87,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - LSA: AuditBaseObjects
 - LSA: CrashOnAuditFail
 
-## Autoruns & Persistance  (529 résultats, 38 types de contrôle)
+## Autoruns & Persistance  (529 résultats)
 - AppInit_DLLs
 - BHO (HKLM BHO (WOWN)): {GUID}
 - BHO (HKLM BHO (WOWN)): IEToEdge BHO
@@ -111,7 +127,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - WMI EventFilter: SCM Event Log Filter
 - WMI FilterToConsumerBinding Query
 
-## Azure AD & Conformité Cloud  (6 résultats, 6 types de contrôle)
+## Azure AD & Conformité Cloud  (6 résultats)
 - Azure AD / Domain Join Status
 - Conditional Access Compliance
 - Intune MDM Enrollment
@@ -119,7 +135,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - OneDrive KFM (Known Folder Move)
 - Windows Hello for Business
 
-## BitLocker  (7 résultats, 7 types de contrôle)
+## BitLocker  (7 résultats)
 - BitLocker WMI Access
 - FVE Policy: EnableBDEWithNoTPM
 - FVE Policy: EncryptionMethod (Fixed Drives)
@@ -128,13 +144,13 @@ Généré depuis un rapport réel. 49 collecteurs.
 - FVE Policy: UseTPM
 - FVE Policy: UseTPMPIN
 
-## Centre de sécurité (AV/Pare-feu)  (4 résultats, 4 types de contrôle)
+## Centre de sécurité (AV/Pare-feu)  (4 résultats)
 - Anti-logiciel espion enregistré
 - Antivirus enregistré : Windows Defender
 - Pare-feu enregistré
 - Synthèse antivirus enregistrés
 
-## Certificats & PKI  (68 résultats, 67 types de contrôle)
+## Certificats & PKI  (68 résultats)
 - Auto-Enrollment Policy (HKCU)
 - Auto-Enrollment Policy (HKLM)
 - Disallowed/Revoked Certificates Store
@@ -203,7 +219,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Root Certificate Auto-Update
 - WinTrust: Software Publishing Revocation Check
 
-## CisFallbackCollector  (30 résultats, 24 types de contrôle)
+## CisFallbackCollector  (30 résultats)
 - CISFallback_5.6
 - CISFallback_5.9
 - CISFallback_5.N
@@ -229,7 +245,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - CISFallback_N.N.N.5
 - CISFallback_N.N.N.6
 
-## Configuration des journaux  (7 résultats, 7 types de contrôle)
+## Configuration des journaux  (7 résultats)
 - Rétention du journal : Application
 - Rétention du journal : Security
 - Rétention du journal : System
@@ -238,20 +254,48 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Taille du journal : Security
 - Taille du journal : System
 
-## Délégation de Credentials  (3 résultats, 3 types de contrôle)
+## Defender — Exclusions & Analyses  (11 résultats)
+- Dernière analyse complète (FullScanAge)
+- Dernière analyse rapide (QuickScanAge)
+- Exclusions d'adresses IP (ExclusionIpAddress)
+- Exclusions d'extensions (ExclusionExtension)
+- Exclusions de chemins (ExclusionPath)
+- Exclusions de processus (ExclusionProcess)
+- MAPS / Protection cloud
+- Network Protection (mode)
+- Planification d'analyse
+- PUA Protection (mode)
+- SmartScreen — mode précis
+
+## Délégation de Credentials  (3 résultats)
 - CredSSP — AllowEncryptionOracle
 - Délégation de credentials
 - Remote Credential Guard
 
-## DNS-over-HTTPS  (1 résultats, 1 types de contrôle)
+## DNS-over-HTTPS  (1 résultats)
 - DNS-over-HTTPS (DoH)
 
-## Durcissement authentification domaine  (3 résultats, 3 types de contrôle)
+## Droits utilisateur (User Rights)  (13 résultats)
+- Logon Right: SeBatchLogonRight (Ouvrir une session en tant que tache)
+- Logon Right: SeDenyInteractiveLogonRight (Interdire l'ouverture de session locale)
+- Logon Right: SeDenyRemoteInteractiveLogonRight (Interdire l'ouverture de session par les services Bureau a distance)
+- Logon Right: SeServiceLogonRight (Ouvrir une session en tant que service)
+- Privilege: SeAssignPrimaryTokenPrivilege (Remplacer un jeton de niveau processus)
+- Privilege: SeBackupPrivilege (Sauvegarder des fichiers et des repertoires)
+- Privilege: SeCreateTokenPrivilege (Creer un objet-jeton)
+- Privilege: SeDebugPrivilege (Deboguer les programmes)
+- Privilege: SeImpersonatePrivilege (Empprunter l'identite d'un client apres authentification)
+- Privilege: SeLoadDriverPrivilege (Charger et decharger des pilotes de peripheriques)
+- Privilege: SeRestorePrivilege (Restaurer des fichiers et des repertoires)
+- Privilege: SeTakeOwnershipPrivilege (Prendre possession de fichiers ou d'autres objets)
+- Privilege: SeTcbPrivilege (Agir en tant que partie du systeme d'exploitation)
+
+## Durcissement authentification domaine  (3 résultats)
 - Channel binding LDAP (ADVN — contexte)
 - Contexte : appartenance au domaine
 - Signature LDAP client (LDAPClientIntegrity)
 
-## Durcissement Avancé  (6 résultats, 6 types de contrôle)
+## Durcissement Avancé  (6 résultats)
 - Audit de la ligne de commande à la création de processus
 - Audit et restriction du trafic NTLM
 - Chemins de services non quotés (Unquoted Service Paths)
@@ -259,7 +303,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Restrictions d'installation de périphériques USB
 - Restrictions Point and Print (PrintNightmare)
 
-## Durcissement navigateurs  (9 résultats, 9 types de contrôle)
+## Durcissement navigateurs  (9 résultats)
 - Chrome: Contrôle des extensions (blocklist/allowlist)
 - Chrome: Gestionnaire de mots de passe intégré
 - Chrome: Restrictions de téléchargement
@@ -270,24 +314,24 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Edge: Restrictions de téléchargement
 - Edge: Version TLS minimale (SSLVersionMin)
 
-## Durcissement RDP  (4 résultats, 4 types de contrôle)
+## Durcissement RDP  (4 résultats)
 - RDP — Couche de sécurité
 - RDP — État
 - RDP — Niveau de chiffrement
 - RDP — NLA (Network Level Authentication)
 
-## Durcissement SMB  (4 résultats, 4 types de contrôle)
+## Durcissement SMB  (4 résultats)
 - SMB Encryption
 - SMB Signing — Client
 - SMB Signing — Serveur
 - SMBv1
 
-## Durcissement système (extra)  (3 résultats, 3 types de contrôle)
+## Durcissement système (extra)  (3 résultats)
 - AlwaysInstallElevated (escalade via MSI)
 - Stockage USB (USBSTOR / écriture amovible)
 - Windows Defender Application Guard (WDAG)
 
-## EventLogCollector  (7 résultats, 7 types de contrôle)
+## EventLogCollector  (7 résultats)
 - Journal: Application
 - Journal: Microsoft-Windows-AppLocker/EXE and DLL
 - Journal: Microsoft-Windows-BitLocker/BitLocker Management
@@ -296,13 +340,31 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Journal: Security
 - Journal: System
 
-## Groupes & comptes locaux  (4 résultats, 4 types de contrôle)
+## Fonctionnalités Windows 11 récentes  (5 résultats)
+- Mode Développeur / Sideloading
+- Quick Assist (assistance à distance)
+- Sudo for Windows
+- Windows Copilot
+- Windows Recall (capture d'écran IA)
+
+## Groupes & comptes locaux  (4 résultats)
 - Compte Invité (Guest, RID N)
 - Comptes locaux : mot de passe qui n'expire jamais
 - Comptes locaux dormants
 - Membres du groupe Administrateurs local
 
-## Inventaire Logiciels  (14 résultats, 14 types de contrôle)
+## Intégrité du démarrage  (9 résultats)
+- Démarrage: Boot Debugging (bootdebug)
+- Démarrage: Flight Signing (flightsigning)
+- Démarrage: Kernel Debugging (debug)
+- Démarrage: No Integrity Checks (nointegritychecks)
+- Démarrage: Test Signing Mode (testsigning)
+- Driver Signature Enforcement (synthèse)
+- HVCI configuré au démarrage (contexte)
+- Microsoft Vulnerable Driver Blocklist (BYOVD)
+- Secure Boot — mode des clés
+
+## Inventaire Logiciels  (14 résultats)
 - .NET (Core) : Versions installées
 - .NET Framework : Versions installées
 - AppX / MSIX (Microsoft Store)
@@ -318,7 +380,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Mozilla Firefox : Extensions installées
 - Sysmon : Service détecté
 
-## Journaux Forensiques  (10 résultats, 10 types de contrôle)
+## Journaux Forensiques  (10 résultats)
 - A. Événements Sécurité Critiques
 - B. Événements Système Suspects
 - C1. PowerShell — Exécution de Scripts (N)
@@ -330,7 +392,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - F2. RDP — Connexions Réseau Avant Auth (N)
 - G. Résumé Forensique Global
 
-## Kerberos & Authentification  (19 résultats, 19 types de contrôle)
+## Kerberos & Authentification  (19 résultats)
 - Cache credentials : CachedLogonsCount (Winlogon)
 - Compte Administrateur local (SID-N)
 - Domaine : Appartenance et rôle
@@ -351,10 +413,10 @@ Généré depuis un rapport réel. 49 collecteurs.
 - PtH : DisableRestrictedAdminOutboundCreds
 - Stratégie de groupe : Dernière mise à jour
 
-## LAPS  (1 résultats, 1 types de contrôle)
+## LAPS  (1 résultats)
 - LAPS Legacy (AdmPwd)
 
-## Microsoft Defender for Endpoint  (8 résultats, 8 types de contrôle)
+## Microsoft Defender for Endpoint  (8 résultats)
 - A. MDE — Statut d'Enrôlement
 - A2. MDE — Méthode d'Onboarding
 - B1. Service Sense — Agent MDE
@@ -364,7 +426,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - E. Defender AV — Versions et Signatures
 - F. ASR — Règles de Réduction de la Surface d'Attaque
 
-## NetworkSecCollector  (26 résultats, 26 types de contrôle)
+## NetworkSecCollector  (26 résultats)
 - DNS over HTTPS (DoH) - EnableAutoDoh
 - DNSSEC - Validation des signatures DNS
 - IPv6 - Composants désactivés (DisabledComponents)
@@ -392,7 +454,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - WPAD - Politique HKLM (WpadOverride)
 - WPAD - Web Proxy Auto-Discovery (état global)
 
-## Partages Réseau  (10 résultats, 10 types de contrôle)
+## Partages Réseau  (10 résultats)
 - LSA - RestrictAnonymous
 - LSA - RestrictAnonymousSAM
 - Partage Admin : IPC$
@@ -404,11 +466,28 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Session Nulle - RestrictNullSessAccess
 - Sessions SMB actives
 
-## Print Spooler  (2 résultats, 2 types de contrôle)
+## Persistance avancée  (16 résultats)
+- Accessibilité (backdoor Sticky Keys): AtBroker.exe
+- Accessibilité (backdoor Sticky Keys): DisplaySwitch.exe
+- Accessibilité (backdoor Sticky Keys): Magnify.exe
+- Accessibilité (backdoor Sticky Keys): Narrator.exe
+- Accessibilité (backdoor Sticky Keys): osk.exe
+- Accessibilité (backdoor Sticky Keys): sethc.exe
+- Accessibilité (backdoor Sticky Keys): utilman.exe
+- AppCertDLLs
+- AppInit_DLLs (contrôle croisé)
+- COM Hijacking : Synthèse
+- COM Hijacking (HKCU): {GUID}
+- KnownDLLs
+- LSA: Authentication Packages
+- LSA: Security Packages
+- Print Monitors
+
+## Print Spooler  (2 résultats)
 - Service Print Spooler — Démarrage
 - Spooler RPC Endpoint distant
 
-## Processus & Drivers  (60 résultats, 20 types de contrôle)
+## Processus & Drivers  (63 résultats)
 - Driver (Suspicious Path): AscFileFilter
 - Driver (Suspicious Path): AscRegistryFilter
 - Driver (Suspicious Path): cpuzN
@@ -430,7 +509,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Services: Summary
 - System Integrity: Overall Summary
 
-## Protection Exploit  (6 résultats, 6 types de contrôle)
+## Protection Exploit  (6 résultats)
 - ASLR — MoveImages
 - BootExecute
 - Control Flow Guard (CFG)
@@ -438,20 +517,42 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Mitigation Audit Options
 - SEHOP
 
-## Protection LSA  (2 résultats, 2 types de contrôle)
+## Protection LSA  (2 résultats)
 - LSA Protection (RunAsPPL)
 - Stockage hash LM
 
-## Règles ASR  (1 résultats, 1 types de contrôle)
+## Proxy & Résolution réseau  (6 résultats)
+- NRPT (Name Resolution Policy Table)
+- Proxy auto-configuration (PAC / AutoConfigURL)
+- Proxy WinHTTP machine (WinHttpSettings)
+- Proxy WinINET (ProxyServer)
+- Service DNS Client Cache (Dnscache)
+- Service WinHTTP Auto Proxy (WinHttpAutoProxySvc)
+
+## Règles ASR  (1 résultats)
 - Règles ASR
 
-## Secure Boot & UEFI  (4 résultats, 4 types de contrôle)
+## Schannel & Cryptographie  (15 résultats)
+- Cache de session Schannel (Client/ServerCacheTime)
+- Certificats faibles : magasin My
+- Certificats faibles : magasin Root
+- Mode FIPS (FipsAlgorithmPolicy)
+- Ordre des cipher suites (SSL Cipher Suite Order)
+- Schannel Ciphers : DES N/N désactivé
+- Schannel Ciphers : RC4 N/N désactivé
+- Schannel Ciphers : Triple DES N désactivé
+- Schannel Hashes : MD5 désactivé
+- Schannel Hashes : SHA désactivé
+- Schannel KeyExchangeAlgorithms : Diffie-Hellman désactivé
+- Schannel KeyExchangeAlgorithms : PKCS désactivé
+
+## Secure Boot & UEFI  (4 résultats)
 - Firmware — Informations
 - Firmware — Mode de démarrage
 - Secure Boot — État
 - Secure Boot — Mises à jour disponibles
 
-## Sécurité Additionnelle  (24 résultats, 24 types de contrôle)
+## Sécurité Additionnelle  (24 résultats)
 - Atténuations Spectre/Meltdown
 - AutoPlay désactivé (NoAutoRun)
 - AutoRun désactivé (NoDriveTypeAutoRun)
@@ -477,12 +578,12 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Windows Update: Mises à jour non suspendues
 - WSUS / Serveur de mises à jour configuré
 
-## Sécurité Bluetooth  (3 résultats, 3 types de contrôle)
+## Sécurité Bluetooth  (3 résultats)
 - Bluetooth — Politique
 - Bluetooth — Radio
 - Bluetooth — Service (BTHPORT)
 
-## Sécurité Microsoft Office  (23 résultats, 23 types de contrôle)
+## Sécurité Microsoft Office  (23 résultats)
 - ActiveX - Désactivation globale Office
 - Affichage protégé - Excel (Office N/N/N)
 - Affichage protégé - PowerPoint (Office N/N/N)
@@ -507,7 +608,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Outlook - Niveau de sécurité pièces jointes (Office N/N/N)
 - SYNTHÈSE - Sécurité Microsoft Office
 
-## Sécurité WiFi  (39 résultats, 11 types de contrôle)
+## Sécurité WiFi  (39 résultats)
 - WiFi — Auto-connexion hotspots WiFi Sense
 - WiFi — Auto-connexion OEM
 - WiFi — Nombre total de profils
@@ -520,12 +621,12 @@ Généré depuis un rapport réel. 49 collecteurs.
 - WiFi […] — Connexion automatique
 - WiFi […] — Randomisation MAC
 
-## Services de découverte réseau  (3 résultats, 3 types de contrôle)
+## Services de découverte réseau  (3 résultats)
 - Service FDResPub (Function Discovery / WSD)
 - Service SSDPSRV (SSDP Discovery / UPnP)
 - Service upnphost (UPnP Device Host)
 
-## System Information  (41 résultats, 41 types de contrôle)
+## System Information  (41 résultats)
 - BIOS Manufacturer
 - BIOS Release Date
 - BIOS Version
@@ -568,7 +669,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - UEFI / BIOS Type
 - Windows Directory
 
-## TLS / Cryptography  (36 résultats, 32 types de contrôle)
+## TLS / Cryptography  (36 résultats)
 - Cipher Suites: Policy Configuration
 - Cipher: AES N/N
 - Cipher: DES N/N
@@ -602,7 +703,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - SMB: Server Signing Required
 - SMB: SMBv1 Protocol
 
-## UAC Détaillé  (8 résultats, 8 types de contrôle)
+## UAC Détaillé  (8 résultats)
 - UAC — Bureau sécurisé
 - UAC — Chemins UIA sécurisés
 - UAC — Comportement Admin
@@ -612,7 +713,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - UAC — Validation signatures admin
 - UAC — Virtualisation
 
-## User Accounts  (26 résultats, 26 types de contrôle)
+## User Accounts  (26 résultats)
 - Built-in Administrator: Active
 - Built-in Administrator: Renamed
 - Guest Account Status
@@ -640,7 +741,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Password Policy: Password History Size
 - Password Policy: Source
 
-## VBS Security  (20 résultats, 20 types de contrôle)
+## VBS Security  (20 résultats)
 - Credential Guard Running (WMI)
 - Credential Guard: LsaCfgFlags
 - DMA Protection in VBS Properties (WMI)
@@ -662,7 +763,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - VBS Security Services Running
 - VBS Status (WMI)
 
-## Verrouillage & Accès Physique  (13 résultats, 13 types de contrôle)
+## Verrouillage & Accès Physique  (13 résultats)
 - Connexion par carte à puce (Smart Card)
 - DeviceLock - Politiques PIN (PolicyManager)
 - Économiseur d'écran - Délai d'activation
@@ -677,11 +778,11 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Windows Hello - AllowDomainPINLogon
 - Windows Hello for Business - État GPO
 
-## WDigest  (2 résultats, 2 types de contrôle)
+## WDigest  (2 résultats)
 - WDigest — Negotiate
 - WDigest — UseLogonCredential
 
-## Windows Defender  (31 résultats, 31 types de contrôle)
+## Windows Defender  (31 résultats)
 - AM Engine Version
 - AM Product Version
 - AM Service Enabled
@@ -714,7 +815,7 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Tamper Protection
 - Tamper Protection Source
 
-## Windows Firewall  (35 résultats, 35 types de contrôle)
+## Windows Firewall  (35 résultats)
 - COM: Domain (COM) Default Inbound Action
 - COM: Domain (COM) Default Outbound Action
 - COM: Domain (COM) Firewall Enabled
@@ -751,11 +852,22 @@ Généré depuis un rapport réel. 49 collecteurs.
 - Public Profile: Notifications Disabled
 - Windows Firewall Service (MpsSvc)
 
-## Windows Sandbox  (2 résultats, 2 types de contrôle)
+## Windows LAPS (natif)  (9 résultats)
+- Windows LAPS: AdministratorAccountName
+- Windows LAPS: ADPasswordEncryptionEnabled
+- Windows LAPS: BackupDirectory
+- Windows LAPS: PasswordAgeDays
+- Windows LAPS: PasswordComplexity
+- Windows LAPS: PasswordLength
+- Windows LAPS: PostAuthenticationActions
+- Windows LAPS: Presence du composant (CSE)
+- Windows LAPS: Service
+
+## Windows Sandbox  (2 résultats)
 - Hyper-V (prérequis Sandbox)
 - Windows Sandbox
 
-## Windows Update  (7 résultats, 7 types de contrôle)
+## Windows Update  (7 résultats)
 - A. Services Windows Update
 - B. Configuration Windows Update
 - C. Dernière Activité de Mise à Jour
@@ -765,4 +877,4 @@ Généré depuis un rapport réel. 49 collecteurs.
 - G. Pauses des Mises à Jour
 
 ---
-**Total : 664 types de contrôle distincts** répartis sur 49 collecteurs (hors écarts MSCT : 330 politiques comparées, et contrôles CIS : 152).
+**Total : 756 types de contrôle distincts** sur 59 collecteurs · **330 politiques MSCT** · **152 contrôles CIS**.

@@ -293,6 +293,17 @@ public sealed class AnalysisService
 		TryAdd<LogConfigCollector>(collectors);
 		TryAdd<NetworkServicesHardeningCollector>(collectors);
 		TryAdd<DomainAuthHardeningCollector>(collectors);
+		// Vague 1 — nouveaux collecteurs (roadmap communautaire)
+		TryAdd<AmsiCollector>(collectors);
+		TryAdd<ProxyNetworkCollector>(collectors);
+		TryAdd<UserRightsCollector>(collectors);
+		TryAdd<WindowsLapsCollector>(collectors);
+		TryAdd<ModernWindowsFeaturesCollector>(collectors);
+		TryAdd<AdvancedPersistenceCollector>(collectors);
+		TryAdd<DefenderExclusionsCollector>(collectors);
+		TryAdd<FileSystemAclCollector>(collectors);
+		TryAdd<BootIntegrityCollector>(collectors);
+		TryAdd<SchannelCryptoCollector>(collectors);
 		return collectors;
 	}
 
