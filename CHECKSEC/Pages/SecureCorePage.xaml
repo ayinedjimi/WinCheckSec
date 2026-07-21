@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="CHECKSEC.Pages.SecureCorePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required"
+    Loaded="OnLoaded">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Padding="12">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <FontIcon Glyph="&#xE72E;" FontSize="24" Foreground="{StaticResource AccentBlueBrush}"/>
+                <StackPanel>
+                    <TextBlock Text="Secure Core — Sécurité Matérielle" Style="{StaticResource TitleTextBlockStyle}"/>
+                    <TextBlock Text="État des fonctionnalités de sécurité matérielle Microsoft Secure Core"
+                               Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.5"/>
+                </StackPanel>
+            </StackPanel>
+
+            <ProgressBar IsIndeterminate="True"
+                         Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"/>
+
+            <TextBlock Text="Lancez une analyse pour afficher les résultats."
+                       Visibility="{x:Bind ViewModel.HasResults, Mode=OneWay, Converter={StaticResource BoolToInverseVis}}"
+                       Opacity="0.4" Margin="0,24,0,0" HorizontalAlignment="Center" FontSize="14"/>
+
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                           Visibility="{x:Bind ViewModel.HasResults, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="280" MinItemHeight="140"
+                                       MinColumnSpacing="12" MinRowSpacing="12"/>
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                CornerRadius="8" Padding="20"
+                                BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Tapped="OnSecureCoreTapped"
+                                PointerEntered="OnCardPointerEntered"
+                                PointerExited="OnCardPointerExited">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <FontIcon Glyph="{Binding Icon}" FontSize="32"
+                                          VerticalAlignment="Center" Margin="0,0,16,0"
+                                          Foreground="{Binding StatusColorHex, Converter={StaticResource HexToBrush}}"/>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="{Binding Value}" Opacity="0.6"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="180"
+                                               Style="{StaticResource CaptionTextBlockStyle}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                                            HorizontalAlignment="Right" Spacing="6">
+                                    <Ellipse Width="16" Height="16" HorizontalAlignment="Center"
+                                             Fill="{Binding StatusColorHex, Converter={StaticResource HexToBrush}}"/>
+                                    <TextBlock Text="{Binding StatusLabel}" FontSize="11"
+                                               HorizontalAlignment="Center" Opacity="0.7"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

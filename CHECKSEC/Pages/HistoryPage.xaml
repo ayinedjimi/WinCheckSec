@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="CHECKSEC.Pages.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:svc="using:CHECKSEC.Services"
+    xmlns:vm="using:CHECKSEC.ViewModels"
+    NavigationCacheMode="Required"
+    Loaded="OnLoaded">
+
+    <Grid Padding="12" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <FontIcon Glyph="&#xE787;" FontSize="24" Foreground="{StaticResource AccentBlueBrush}"/>
+            <TextBlock Text="Historique des analyses" Style="{StaticResource TitleTextBlockStyle}"/>
+        </StackPanel>
+
+        <!-- Snapshots list -->
+        <ScrollViewer Grid.Row="1">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Snapshots, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="8"/>
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="svc:AnalysisSnapshot">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                CornerRadius="8" Padding="20"
+                                BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                PointerEntered="OnCardPointerEntered"
+                                PointerExited="OnCardPointerExited">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,20,0">
+                                    <TextBlock Text="{x:Bind GlobalGrade}" FontSize="36" FontWeight="Bold"
+                                               Foreground="{StaticResource AccentBlueBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock HorizontalAlignment="Center" FontSize="12" Opacity="0.5">
+                                        <Run Text="{x:Bind GlobalScore}"/><Run Text="%"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock FontSize="14" FontWeight="SemiBold">
+                                        <Run Text="{x:Bind MachineName}"/>
+                                        <Run Text=" — "/>
+                                        <Run Text="{x:Bind Timestamp}"/>
+                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <TextBlock FontSize="12" Opacity="0.7">
+                                            <Run Text="{x:Bind TotalChecks}"/><Run Text=" vérifications"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="12" Foreground="{StaticResource StatusGreenBrush}">
+                                            <Run Text="{x:Bind TotalOK}"/><Run Text=" OK"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="12" Foreground="{StaticResource StatusOrangeBrush}">
+                                            <Run Text="{x:Bind TotalWarning}"/><Run Text=" Warn"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="12" Foreground="{StaticResource StatusRedBrush}">
+                                            <Run Text="{x:Bind TotalCritical}"/><Run Text=" Crit"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="2" Text="{x:Bind Id}" VerticalAlignment="Center"
+                                           FontFamily="Cascadia Mono" FontSize="11" Opacity="0.3" Margin="0,0,12,0"/>
+
+                                <Button Grid.Column="3" ToolTipService.ToolTip="Supprimer"
+                                        Click="OnDeleteSnapshot" Tag="{x:Bind}"
+                                        AutomationProperties.Name="Supprimer cette analyse">
+                                    <FontIcon Glyph="&#xE74D;" FontSize="14"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <!-- Comparison section -->
+        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8" Padding="20"
+                BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Comparaison de deux analyses" FontWeight="SemiBold" FontSize="16"/>
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ComboBox x:Name="Combo1" Header="Analyse de référence (avant)"
+                              ItemsSource="{x:Bind ViewModel.Snapshots, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedSnapshot1, Mode=TwoWay}"
+                              MinWidth="300">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="svc:AnalysisSnapshot">
+                                <TextBlock>
+                                    <Run Text="{x:Bind GlobalGrade}"/>
+                                    <Run Text=" — "/>
+                                    <Run Text="{x:Bind Timestamp}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{x:Bind GlobalScore}"/>
+                                    <Run Text="%)"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ComboBox x:Name="Combo2" Header="Analyse récente (après)"
+                              ItemsSource="{x:Bind ViewModel.Snapshots, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedSnapshot2, Mode=TwoWay}"
+                              MinWidth="300">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="svc:AnalysisSnapshot">
+                                <TextBlock>
+                                    <Run Text="{x:Bind GlobalGrade}"/>
+                                    <Run Text=" — "/>
+                                    <Run Text="{x:Bind Timestamp}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{x:Bind GlobalScore}"/>
+                                    <Run Text="%)"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="Comparer" VerticalAlignment="Bottom"
+                            Click="OnCompareClick"
+                            ToolTipService.ToolTip="Comparer les scores entre deux analyses"
+                            AutomationProperties.Name="Comparer deux analyses"
+                            Style="{StaticResource AccentButtonStyle}"/>
+                </StackPanel>
+
+                <!-- Comparison summary -->
+                <TextBlock Text="{x:Bind ViewModel.ComparisonSummary, Mode=OneWay}"
+                           Visibility="{x:Bind ViewModel.HasComparison, Mode=OneWay}"
+                           FontSize="14" FontWeight="SemiBold" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Comparison results -->
+        <ScrollViewer Grid.Row="3" MaxHeight="300"
+                      Visibility="{x:Bind ViewModel.HasComparison, Mode=OneWay}">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.ComparisonItems, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="4"/>
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ComparisonItem">
+                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                CornerRadius="6" Padding="16,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Category}" VerticalAlignment="Center" FontSize="13"/>
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="13" Opacity="0.6">
+                                    <Run Text="{x:Bind GradeBefore}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{x:Bind Before}"/>
+                                    <Run Text="%)"/>
+                                </TextBlock>
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="13">
+                                    <Run Text="{x:Bind GradeAfter}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{x:Bind After}"/>
+                                    <Run Text="%)"/>
+                                </TextBlock>
+                                <TextBlock Grid.Column="3" Text="{x:Bind DeltaLabel}"
+                                           VerticalAlignment="Center" FontSize="13" FontWeight="Bold"
+                                           HorizontalAlignment="Right"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+</Page>

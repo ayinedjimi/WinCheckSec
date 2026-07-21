@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="CHECKSEC.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required">
+
+    <ScrollViewer Padding="12">
+        <StackPanel Spacing="16" MaxWidth="800">
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,8">
+                <FontIcon Glyph="&#xE713;" FontSize="24" Foreground="{StaticResource AccentBlueBrush}"/>
+                <TextBlock Text="Paramètres" Style="{StaticResource TitleTextBlockStyle}"/>
+            </StackPanel>
+
+            <!-- MSCT Toolkit Path -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Chemins" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <TextBox Header="Chemin MSCT Toolkit"
+                             AutomationProperties.Name="Chemin MSCT Toolkit"
+                             Text="{x:Bind ViewModel.MsctToolkitPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="C:\MSCTOOLKIT"/>
+
+                    <TextBox Header="Répertoire d'export par défaut"
+                             AutomationProperties.Name="Répertoire d'export par défaut"
+                             Text="{x:Bind ViewModel.DefaultExportPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="Bureau"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Appearance -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Apparence" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <ComboBox Header="Thème" SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}" Width="250"
+                             AutomationProperties.Name="Sélectionner le thème">
+                        <ComboBoxItem Content="Système"/>
+                        <ComboBoxItem Content="Clair"/>
+                        <ComboBoxItem Content="Sombre"/>
+                    </ComboBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Analysis -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Analyse" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <NumberBox Header="Timeout analyse (minutes)"
+                               AutomationProperties.Name="Timeout analyse en minutes"
+                               Value="{x:Bind ViewModel.AnalysisTimeout, Mode=TwoWay}"
+                               Minimum="1" Maximum="30"
+                               SpinButtonPlacementMode="Compact" Width="250"/>
+
+                    <ToggleSwitch Header="Export automatique après analyse"
+                                  AutomationProperties.Name="Export automatique après analyse"
+                                  IsOn="{x:Bind ViewModel.AutoExport, Mode=TwoWay}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Export -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Export" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <ComboBox Header="Séparateur CSV" Width="250"
+                             AutomationProperties.Name="Séparateur CSV"
+                              SelectedIndex="{x:Bind ViewModel.SelectedCsvSeparatorIndex, Mode=TwoWay}" x:Name="CsvSepCombo" SelectionChanged="OnCsvSepChanged">
+                        <ComboBoxItem Content="Point-virgule (;)" Tag=";"/>
+                        <ComboBoxItem Content="Virgule (,)" Tag=","/>
+                        <ComboBoxItem Content="Tabulation" Tag="&#x9;"/>
+                    </ComboBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Rapports -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Rapports" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <ComboBox Header="Template de rapport" Width="250"
+                              SelectedIndex="{x:Bind ViewModel.SelectedTemplateIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="Technique"/>
+                        <ComboBoxItem Content="Exécutif"/>
+                        <ComboBoxItem Content="Conformité"/>
+                    </ComboBox>
+
+                    <TextBox Header="Nom de l'entreprise"
+                             Text="{x:Bind ViewModel.CompanyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="Mon Entreprise"
+                             AutomationProperties.Name="Nom de l'entreprise pour les rapports"/>
+
+                    <TextBox Header="Watermark"
+                             Text="{x:Bind ViewModel.ReportWatermark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="CONFIDENTIEL"
+                             AutomationProperties.Name="Texte de watermark des rapports"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Actions -->
+            <Grid Margin="0,8,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Command="{x:Bind ViewModel.SaveCommand}" Style="{StaticResource AccentButtonStyle}" Padding="24,10" Margin="0,0,12,0"
+                        ToolTipService.ToolTip="Enregistrer les paramètres actuels"
+                        AutomationProperties.Name="Sauvegarder les paramètres">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE74E;" FontSize="16"/>
+                        <TextBlock Text="Sauvegarder"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="1" Command="{x:Bind ViewModel.ResetCommand}" Padding="24,10"
+                        ToolTipService.ToolTip="Réinitialiser tous les paramètres par défaut"
+                        AutomationProperties.Name="Réinitialiser les paramètres">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE72C;" FontSize="16"/>
+                        <TextBlock Text="Réinitialiser"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                           VerticalAlignment="Center" Margin="20,0,0,0"
+                           Foreground="{StaticResource StatusGreenBrush}" FontWeight="SemiBold"/>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

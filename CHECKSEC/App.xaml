@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application
+    x:Class="CHECKSEC.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:CHECKSEC.Helpers"
+    xmlns:local="using:CHECKSEC">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <helpers:BoolToVisibilityConverter x:Key="BoolToVis"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="BoolToInverseVis"/>
+            <helpers:HexToBrushConverter x:Key="HexToBrush"/>
+            <helpers:DateTimeConverter x:Key="DateTimeConverter"/>
+
+            <!-- CHECKSEC Brand Colors (work on both light and dark) -->
+            <Color x:Key="AccentBlue">#0078D4</Color>
+            <Color x:Key="StatusGreen">#4CAF50</Color>
+            <Color x:Key="StatusOrange">#FF9800</Color>
+            <Color x:Key="StatusRed">#F44336</Color>
+
+            <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlue}" />
+            <SolidColorBrush x:Key="StatusGreenBrush" Color="{StaticResource StatusGreen}" />
+            <SolidColorBrush x:Key="StatusOrangeBrush" Color="{StaticResource StatusOrange}" />
+            <SolidColorBrush x:Key="StatusRedBrush" Color="{StaticResource StatusRed}" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
