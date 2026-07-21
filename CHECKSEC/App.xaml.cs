@@ -57,6 +57,7 @@ public partial class App : Application
 		services.AddSingleton<UnifiedReportService>();
 		services.AddSingleton<ConsolidatedExcelService>();
 		services.AddSingleton<CefExportService>();
+		services.AddSingleton<SarifExportService>();
 	}
 
 	protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -112,6 +113,13 @@ public partial class App : Application
 				string contents = Services.GetRequiredService<CefExportService>().GenerateCef(analysis);
 				File.WriteAllText(outputPath, contents);
 				Console.WriteLine("CEF report saved to " + outputPath);
+			}
+			else if (format == "sarif")
+			{
+				// Export SARIF 2.1.0 pour intégration CI/CD & SIEM.
+				string contentsSarif = Services.GetRequiredService<SarifExportService>().GenerateSarif(analysis);
+				File.WriteAllText(outputPath, contentsSarif);
+				Console.WriteLine("SARIF report saved to " + outputPath);
 			}
 			else
 			{

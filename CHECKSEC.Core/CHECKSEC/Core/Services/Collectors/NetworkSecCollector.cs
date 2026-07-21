@@ -295,33 +295,12 @@ public class NetworkSecCollector : ISecurityCollector
 
 	private static void CheckDnssecAndDoH(List<SecurityResult> results)
 	{
-		object enableAutoDohValue = ReadRegHklm("SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters", "EnableAutoDoh");
-		object dohFlagsValue = ReadRegHklm("SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters", "DohFlags");
-		object dohPolicyValue = ReadRegHklm("SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient", "DOHPolicy");
+		// Correctif M1 : la détection DNS-over-HTTPS (DoH) est consolidée dans DnsOverHttpsCollector,
+		// désormais SEULE source. Les résultats DoH (EnableAutoDoh, DOHPolicy, DohFlags) ont été retirés
+		// d'ici pour éliminer les sévérités contradictoires. On ne conserve que la validation DNSSEC.
 		object enableDnssecValue = ReadRegHklm("SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient", "EnableDnssec");
-		int autoDohLevel = ((enableAutoDohValue is int autoDohInt) ? autoDohInt : 0);
-		string dohDescription = autoDohLevel switch
-		{
-			2 => "DNS over HTTPS forcé (optimal)",
-			1 => "DNS over HTTPS automatique",
-			_ => "DNS over HTTPS désactivé",
-		};
-		results.Add(MakeResult("DNS over HTTPS (DoH) - EnableAutoDoh", $"EnableAutoDoh = {autoDohLevel} ({dohDescription})", "EnableAutoDoh = 2 (DNS over HTTPS forcé)", autoDohLevel switch
-		{
-			1 => SecurityStatus.Warning,
-			2 => SecurityStatus.OK,
-			_ => SecurityStatus.Warning,
-		}, "DNS over HTTPS chiffre les requêtes DNS, empêchant l'interception et la manipulation des résolutions de noms. Distinct du DNSSEC qui garantit l'intégrité des réponses DNS.", "Forcer DoH via: HKLM\\SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters\\EnableAutoDoh = 2. Ou via GPO: Computer Configuration > Windows Settings > Name Resolution Policy.", "RFC 8484 | Microsoft DoH Documentation"));
-		if (dohPolicyValue != null)
-		{
-			results.Add(MakeResult("DNS over HTTPS - Politique GPO (DOHPolicy)", $"DOHPolicy = {dohPolicyValue}", "2 (forcer DoH) ou 3 (DoH avec fallback)", (!(dohPolicyValue is int dohPolicyInt) || (dohPolicyInt != 2 && dohPolicyInt != 3)) ? SecurityStatus.Warning : SecurityStatus.OK, "Politique GPO contrôlant le comportement DNS over HTTPS.", "Configurer DOHPolicy = 2 pour forcer DoH sur tous les clients.", "Microsoft Security Baseline - DNS"));
-		}
 		bool isDnssecEnabled = enableDnssecValue is int dnssecInt && dnssecInt == 1;
 		results.Add(MakeResult("DNSSEC - Validation des signatures DNS", (enableDnssecValue == null) ? "Non configuré" : $"EnableDnssec = {enableDnssecValue}", "EnableDnssec = 1 (activé)", (!isDnssecEnabled) ? SecurityStatus.Warning : SecurityStatus.OK, "DNSSEC garantit l'authenticité et l'intégrité des réponses DNS via des signatures cryptographiques. Différent du DoH: DNSSEC protège le contenu, DoH protège la confidentialité de la transmission.", "Activer DNSSEC via GPO ou configurer un résolveur DNS validant DNSSEC (ex: 1.1.1.1, 8.8.8.8).", "RFC 4033-4035 | CIS Benchmark DNS"));
-		if (dohFlagsValue != null)
-		{
-			results.Add(MakeResult("DNS over HTTPS - DohFlags", $"DohFlags = {dohFlagsValue}", "Valeur non nulle (DoH configuré)", SecurityStatus.Info, "Drapeaux de configuration avancée pour DNS over HTTPS.", "Vérifier la configuration DoH complète.", "Microsoft DoH Registry Settings"));
-		}
 	}
 
 	private static void CheckWpad(List<SecurityResult> results)

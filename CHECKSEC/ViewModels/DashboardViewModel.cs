@@ -14,6 +14,7 @@ using CHECKSEC.Core.Services.Helpers;
 using CHECKSEC.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using WinRT;
@@ -206,6 +207,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 			fileSavePicker.FileTypeChoices.Add("Rapport JSON complet", new string[1] { ".json" });
 			fileSavePicker.FileTypeChoices.Add("Paramètres collectés (CSV brut)", new string[1] { ".csv" });
 			fileSavePicker.FileTypeChoices.Add("Rapport texte", new string[2] { ".log", ".txt" });
+			fileSavePicker.FileTypeChoices.Add("Rapport SARIF (CI/CD)", new string[1] { ".sarif" });
 			StorageFile file = await fileSavePicker.PickSaveFileAsync();
 			if (file == null)
 			{
@@ -214,7 +216,10 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 			IsExporting = true;
 			StatusText = "Exportation vers " + file.Name + "…";
 			bool isJson = file.FileType.Equals(".json", StringComparison.OrdinalIgnoreCase);
-			string contents = (file.FileType.Equals(".csv", StringComparison.OrdinalIgnoreCase) ? BuildCsvReport() : (isJson ? BuildJsonReport() : BuildTextReport()));
+			bool isSarif = file.FileType.Equals(".sarif", StringComparison.OrdinalIgnoreCase);
+			string contents = (isSarif
+				? App.Services.GetRequiredService<SarifExportService>().GenerateSarif(_analysis)
+				: (file.FileType.Equals(".csv", StringComparison.OrdinalIgnoreCase) ? BuildCsvReport() : (isJson ? BuildJsonReport() : BuildTextReport())));
 			await File.WriteAllTextAsync(file.Path, contents, Encoding.UTF8);
 			IsExporting = false;
 			StatusText = "Rapport exporté : " + file.Path;
@@ -296,38 +301,47 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 	private string BuildCsvReport()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.AppendLine("Catégorie;Paramètre;Valeur Collectée");
+		// En-tête : on garde le séparateur ';' et l'ordre des colonnes existant,
+		// enrichi d'une colonne 'Statut'.
+		stringBuilder.AppendLine("Catégorie;Paramètre;Valeur Collectée;Statut");
 		foreach (SecurityResult allResult in _analysis.AllResults)
 		{
-			string value = (allResult.Category ?? "").Replace(";", ",");
-			string value2 = (allResult.CheckName ?? "").Replace(";", ",");
-			string value3 = (allResult.CurrentValue ?? "").Replace("\n", " ").Replace("\r", "").Replace(";", ",");
-			StringBuilder stringBuilder2 = stringBuilder;
-			StringBuilder stringBuilder3 = stringBuilder2;
-			StringBuilder.AppendInterpolatedStringHandler handler = new StringBuilder.AppendInterpolatedStringHandler(2, 3, stringBuilder2);
-			handler.AppendFormatted(value);
-			handler.AppendLiteral(";");
-			handler.AppendFormatted(value2);
-			handler.AppendLiteral(";");
-			handler.AppendFormatted(value3);
-			stringBuilder3.AppendLine(ref handler);
+			// Échappement RFC 4180 par champ (guillemets, séparateurs, sauts de ligne).
+			stringBuilder.Append(CsvField(allResult.Category));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(allResult.CheckName));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(allResult.CurrentValue));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(allResult.Status.ToString()));
+			stringBuilder.AppendLine();
 		}
 		foreach (ComplianceGap gap in _analysis.Gaps)
 		{
-			string value4 = (gap.GpoName ?? "MSCT Registry").Replace(";", ",");
-			string value5 = (gap.RegistryPath + "\\" + gap.ValueName).Replace(";", ",");
-			string value6 = (gap.CurrentValue ?? "").Replace("\n", " ").Replace("\r", "").Replace(";", ",");
-			StringBuilder stringBuilder2 = stringBuilder;
-			StringBuilder stringBuilder4 = stringBuilder2;
-			StringBuilder.AppendInterpolatedStringHandler handler = new StringBuilder.AppendInterpolatedStringHandler(2, 3, stringBuilder2);
-			handler.AppendFormatted(value4);
-			handler.AppendLiteral(";");
-			handler.AppendFormatted(value5);
-			handler.AppendLiteral(";");
-			handler.AppendFormatted(value6);
-			stringBuilder4.AppendLine(ref handler);
+			stringBuilder.Append(CsvField(gap.GpoName ?? "MSCT Registry"));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(gap.RegistryPath + "\\" + gap.ValueName));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(gap.CurrentValue));
+			stringBuilder.Append(';');
+			stringBuilder.Append(CsvField(gap.IsCompliant ? "Conforme" : "Écart"));
+			stringBuilder.AppendLine();
 		}
 		return stringBuilder.ToString();
+	}
+
+	// Échappement d'un champ CSV selon RFC 4180 :
+	// si le champ contient un guillemet, un séparateur (';' ou ','),
+	// un saut de ligne (\n) ou un retour chariot (\r), on l'entoure de
+	// guillemets et on double les guillemets internes ('"' -> '""').
+	private static string CsvField(string? value)
+	{
+		string field = value ?? string.Empty;
+		if (field.IndexOfAny(new char[] { '"', ';', ',', '\n', '\r' }) >= 0)
+		{
+			return "\"" + field.Replace("\"", "\"\"") + "\"";
+		}
+		return field;
 	}
 
 	private string BuildTextReport()

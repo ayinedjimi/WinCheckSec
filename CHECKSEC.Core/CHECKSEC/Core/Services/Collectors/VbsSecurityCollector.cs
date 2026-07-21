@@ -652,8 +652,11 @@ public class VbsSecurityCollector : ISecurityCollector
 				CheckName = "Secure Boot (VBS dependency)",
 				CurrentValue = ((secureBootEnabled == -1) ? "Not present / Legacy BIOS" : (isSecureBootEnabled ? "Enabled (1)" : $"Disabled ({secureBootEnabled})")),
 				ExpectedValue = "1 (Enabled)",
-				Status = ((!isSecureBootEnabled) ? SecurityStatus.Critical : SecurityStatus.OK),
-				Description = "Secure Boot is a prerequisite for VBS. It prevents unauthorized OS loaders and bootloaders from running, forming the chain of trust for the entire VBS stack.",
+				// Correctif M4 : SecureBootPolicyCollector est la source canonique de l'état Secure Boot.
+				// On neutralise ici la sévérité (Info) pour ne plus contredire le collecteur canonique
+				// ni perturber le scoring / la tuile Secure Core. CurrentValue conservé à titre informatif.
+				Status = SecurityStatus.Info,
+				Description = "État Secure Boot détaillé dans le collecteur Secure Boot & UEFI",
 				Recommendation = (isSecureBootEnabled ? "Secure Boot is enabled." : "Enable Secure Boot in UEFI firmware settings. Required for VBS and Windows 11."),
 				Reference = "https://docs.microsoft.com/windows-hardware/design/device-experiences/oem-secure-boot"
 			};

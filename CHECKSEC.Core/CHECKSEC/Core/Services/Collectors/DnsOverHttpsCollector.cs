@@ -104,7 +104,9 @@ public class DnsOverHttpsCollector : ISecurityCollector
 					ExpectedValue = "Requis (DoH uniquement)",
 					Status = dohStatus,
 					Description = "État DoH: " + statusText + ". DoH chiffre les requêtes DNS pour protéger la vie privée.",
-					Recommendation = ((dohStatus != 0) ? "Configurez EnableAutoDoh = 2 pour forcer l'utilisation de DoH." : "Configuration optimale."),
+					// Correctif M9 : dohStatus est un SecurityStatus (enum). On compare à la valeur nommée
+					// SecurityStatus.OK (= 0) au lieu du littéral int 0, pour une comparaison explicite et robuste.
+					Recommendation = ((dohStatus != SecurityStatus.OK) ? "Configurez EnableAutoDoh = 2 pour forcer l'utilisation de DoH." : "Configuration optimale."),
 					Reference = "https://learn.microsoft.com/en-us/windows-server/networking/dns/doh-client-support"
 				});
 			}

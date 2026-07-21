@@ -82,9 +82,10 @@ The JSON report (saved to the Desktop) is built for **post‑incident review**:
 - `CollectedAt` **per check**, **ISO‑8601 / UTC** timestamps;
 - **`AnalysisLog`** — execution log (per‑collector status/duration/result count);
 - **`Integrity`** — re‑verifiable **SHA‑256** hash of the report (non‑repudiation);
+- **MITRE ATT&CK mapping** (`MitreTechniques` per control + `MitreSummary` for ATT&CK coverage);
 - MSCT detail (baseline vs actual), per‑control CIS, real Windows event log errors.
 
-Other formats: **PDF** (QuestPDF), **Excel** (ClosedXML), **HTML**, **CEF** (SIEM).
+Other formats: **PDF** (QuestPDF), **Excel** (ClosedXML), **HTML**, **CEF** (SIEM), **SARIF 2.1.0** (CI/CD).
 
 ---
 
