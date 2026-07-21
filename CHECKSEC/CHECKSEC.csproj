@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>CHECKSEC</RootNamespace>
+    <AssemblyName>CHECKSEC</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <!-- On fournit notre propre Main (Program.cs) pour vérifier le runtime VC++ AVANT tout appel natif WindowsAppSDK -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <AssemblyVersion>6.1.0.0</AssemblyVersion>
+    <FileVersion>6.1.0.0</FileVersion>
+    <Version>6.1.0</Version>
+  </PropertyGroup>
+
+  <!-- Le fichier généré à chaque build (numéro de build + version + horodatage). -->
+  <ItemGroup>
+    <Compile Include="$(IntermediateOutputPath)BuildInfo.g.cs" />
+  </ItemGroup>
+
+  <!-- Incrémente build.counter et régénère BuildInfo.g.cs à CHAQUE compilation.
+       Le badge de l'app affiche BuildInfo.Version et choisit une couleur selon BuildNumber. -->
+  <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild;XamlPreCompile;MarkupCompilePass1;CoreCompile;BeforeCompile">
+    <PropertyGroup>
+      <_CounterFile>$(MSBuildProjectDirectory)\build.counter</_CounterFile>
+      <_PrevCounter Condition="Exists('$(_CounterFile)')">$([System.IO.File]::ReadAllText('$(_CounterFile)').Trim())</_PrevCounter>
+      <_PrevCounter Condition="'$(_PrevCounter)' == ''">0</_PrevCounter>
+      <_NewCounter>$([MSBuild]::Add($(_PrevCounter), 1))</_NewCounter>
+      <_BuildTimeUtc>$([System.DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))</_BuildTimeUtc>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_CounterFile)" Lines="$(_NewCounter)" Overwrite="true" WriteOnlyWhenDifferent="false" />
+    <ItemGroup>
+      <_BuildInfoLine Include="// Fichier généré automatiquement à chaque build — ne pas éditer." />
+      <_BuildInfoLine Include="namespace CHECKSEC%3B" />
+      <_BuildInfoLine Include="internal static class BuildInfo" />
+      <_BuildInfoLine Include="{" />
+      <_BuildInfoLine Include="    public const int BuildNumber = $(_NewCounter)%3B" />
+      <_BuildInfoLine Include="    public const string Version = &quot;v6.1.$(_NewCounter)&quot;%3B" />
+      <_BuildInfoLine Include="    public const string BuildTimeUtc = &quot;$(_BuildTimeUtc)&quot;%3B" />
+      <_BuildInfoLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)BuildInfo.g.cs" Lines="@(_BuildInfoLine)" Overwrite="true" WriteOnlyWhenDifferent="false" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250602001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="QuestPDF" Version="2024.12.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CHECKSEC.Core\CHECKSEC.Core.csproj" />
+  </ItemGroup>
+
+</Project>

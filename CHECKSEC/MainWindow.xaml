@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="CHECKSEC.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="CHECKSEC — AYI NEDJIMI CONSULTANTS">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView
+            x:Name="NavView"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Auto"
+            OpenPaneLength="240"
+            CompactPaneLength="48"
+            SelectionChanged="NavView_SelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Tableau de bord" Tag="Dashboard"
+                                   AutomationProperties.Name="Tableau de bord"
+                                   ToolTipService.ToolTip="Vue d'ensemble et lancement d'analyse (Ctrl+1)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Secure Core" Tag="SecureCore"
+                                   AutomationProperties.Name="Secure Core"
+                                   ToolTipService.ToolTip="État des fonctionnalités de sécurité matérielle (Ctrl+2)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE72E;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItemSeparator/>
+
+                <NavigationViewItem Content="Résultats Sécurité" Tag="Results"
+                                   AutomationProperties.Name="Résultats Sécurité"
+                                   ToolTipService.ToolTip="Résultats détaillés des vérifications de sécurité (Ctrl+3)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9F9;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Écarts MSCT" Tag="Gaps"
+                                   AutomationProperties.Name="Écarts MSCT"
+                                   ToolTipService.ToolTip="Écarts par rapport aux baselines Microsoft (Ctrl+4)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7BA;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Benchmark CIS" Tag="Cis"
+                                   AutomationProperties.Name="Benchmark CIS"
+                                   ToolTipService.ToolTip="Conformité au référentiel CIS Benchmark (Ctrl+5)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A5;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Remédiation" Tag="Remediation"
+                                   AutomationProperties.Name="Remédiation"
+                                   ToolTipService.ToolTip="Plan d'actions correctives priorisé (Ctrl+6)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8FD;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Journaux" Tag="EventLog"
+                                   AutomationProperties.Name="Journaux d'événements"
+                                   ToolTipService.ToolTip="Journaux d'événements système de sécurité (Ctrl+7)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE81C;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Historique" Tag="History"
+                                   AutomationProperties.Name="Historique des analyses"
+                                   ToolTipService.ToolTip="Historique et comparaison des analyses précédentes">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE787;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItemSeparator/>
+
+                <NavigationViewItem Content="Système" Tag="SystemInfo"
+                                   AutomationProperties.Name="Informations système"
+                                   ToolTipService.ToolTip="Informations sur la machine et l'environnement (Ctrl+8)">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7F4;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="Paramètres" Tag="Settings"
+                                   AutomationProperties.Name="Paramètres"
+                                   ToolTipService.ToolTip="Configuration de l'application">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="À propos" Tag="About"
+                                   AutomationProperties.Name="À propos"
+                                   ToolTipService.ToolTip="Informations sur l'application et raccourcis clavier">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE946;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="ContentFrame" Padding="24,12,24,24"/>
+        </NavigationView>
+
+        <!-- Badge de version : couleur et numéro changent à chaque build -->
+        <Border x:Name="VersionBadge"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Margin="0,8,196,0" CornerRadius="12" Padding="12,4"
+                Canvas.ZIndex="100" Background="#0078D4"
+                ToolTipService.ToolTip="Version et build de CHECKSEC">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <FontIcon Glyph="&#xECAD;" FontSize="12" Foreground="White"/>
+                <TextBlock x:Name="VersionBadgeText" Text="v6.1"
+                           Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

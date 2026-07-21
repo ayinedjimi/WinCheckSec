@@ -1,0 +1,18 @@
+# Build
+bin/
+obj/
+*.user
+# Binaires extraits (référence locale, non versionnés)
+../_extracted/
+_extracted/
+# Compteur de build local
+CHECKSEC/build.counter
+# Artefacts
+*.pdb
+publish/
+
+# Documents internes (non publiés)
+/ARCHITECTURE.md
+/AUDIT_CHECKSEC.md
+/README_RECONSTRUCTION.md
+/LISTE_DES_TESTS.md

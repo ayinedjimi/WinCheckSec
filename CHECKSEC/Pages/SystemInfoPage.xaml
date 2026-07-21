@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="CHECKSEC.Pages.SystemInfoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Padding="12">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <FontIcon Glyph="&#xE7F4;" FontSize="24" Foreground="{StaticResource AccentBlueBrush}"/>
+                <TextBlock Text="Informations Système" Style="{StaticResource TitleTextBlockStyle}"/>
+            </StackPanel>
+
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="24"
+                    BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <Grid RowSpacing="16" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/><RowDefinition/><RowDefinition/>
+                        <RowDefinition/><RowDefinition/><RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Machine" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.MachineName, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+
+                    <TextBlock Grid.Row="1" Text="Utilisateur" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.UserName, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+
+                    <TextBlock Grid.Row="2" Text="Système d'exploitation" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.OsVersion, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+
+                    <TextBlock Grid.Row="3" Text=".NET Runtime" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.DotNetVersion, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+
+                    <TextBlock Grid.Row="4" Text="Processus 64-bit" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.Is64Bit, Mode=OneWay}"/>
+
+                    <TextBlock Grid.Row="5" Text="Processeurs" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.ProcessorCount, Mode=OneWay}"/>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
