@@ -29,8 +29,9 @@ public class LapsCollector : ISecurityCollector
 		{
 			ct.ThrowIfCancellationRequested();
 			CollectLegacyLaps(collectorReport.Results, ct);
-			ct.ThrowIfCancellationRequested();
-			CollectWindowsLaps(collectorReport.Results, ct);
+			// H3 : le LAPS natif (Windows LAPS) est couvert par WindowsLapsCollector, qui lit
+			// le bon chemin (SOFTWARE\Microsoft\Policies\LAPS). L'ancien CollectWindowsLaps lisait
+			// un chemin erroné (…\CurrentVersion\LAPS\Config) → faux « non configuré ». Retiré.
 		}
 		catch (OperationCanceledException)
 		{

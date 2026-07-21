@@ -142,7 +142,10 @@ public sealed class AnalysisService
 			await Task.WhenAll(collectors.Select((ISecurityCollector c) => Task.Run(async delegate
 			{
 				using CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-				timeoutCts.CancelAfter(TimeSpan.FromSeconds(30L));
+				// H1 : 120 s par collecteur (au lieu de 30 s). Les collecteurs s'exécutent en
+				// parallèle, donc la borne réelle reste le timeout global d'analyse ; 30 s coupait
+				// des collecteurs légitimement lourds (EventLog, SoftwareInventory, WiFi/netsh, AutoRuns).
+				timeoutCts.CancelAfter(TimeSpan.FromSeconds(120L));
 				CollectorReport collectorReport;
 				try
 				{
@@ -463,10 +466,11 @@ public sealed class AnalysisService
 					criticalCount++;
 					break;
 				case SecurityStatus.Error:
-				case SecurityStatus.NotApplicable:
 					errorCount++;
 					break;
 				case SecurityStatus.Info:
+				case SecurityStatus.NotApplicable:
+					// H5 : NotApplicable est neutre (ex. machine sans WiFi), pas une erreur.
 					infoCount++;
 					break;
 				}
@@ -489,7 +493,9 @@ public sealed class AnalysisService
 		int scoredCritical = 0;
 		foreach (SecurityResult result in results)
 		{
-			if (result.Status != SecurityStatus.Info && !result.Category.Contains("Journ", StringComparison.OrdinalIgnoreCase) && !result.Category.Contains("Event", StringComparison.OrdinalIgnoreCase))
+			// H5 : seuls OK/Warning/Critical entrent dans le score. Info, NotApplicable (neutre) et
+			// Error (échec technique) sont exclus du dénominateur pour ne pas fausser le score.
+			if (result.Status != SecurityStatus.Info && result.Status != SecurityStatus.NotApplicable && result.Status != SecurityStatus.Error && !result.Category.Contains("Journ", StringComparison.OrdinalIgnoreCase) && !result.Category.Contains("Event", StringComparison.OrdinalIgnoreCase))
 			{
 				scoredTotal++;
 				if (result.Status == SecurityStatus.OK)
