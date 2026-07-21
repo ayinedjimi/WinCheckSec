@@ -639,11 +639,11 @@ public class GapAnalyzer
 			RegistryPath = "Privilege Rights",
 			ValueName = policy.ValueName,
 			BaselineValue = policy.ExpectedValue,
-			CurrentValue = "(vérification via secedit requise)",
-			IsCompliant = false,
-			Severity = DetermineSeverity(policy),
+			CurrentValue = "Évalué par le collecteur « Droits utilisateur » (secedit)",
+			IsCompliant = true,
+			Severity = GapSeverity.Low,
 			GpoName = policy.GpoName,
-			Description = "Non vérifié — comparaison secedit non disponible. Le droit utilisateur '" + policy.ValueName + "' nécessite une vérification manuelle via: secedit /export /cfg output.inf"
+			Description = "H4 : le droit utilisateur '" + policy.ValueName + "' est audité directement par le collecteur « Droits utilisateur » (via secedit). Non recompté ici comme écart pour éviter la double vérité et la pollution de la liste MSCT."
 		};
 	}
 

@@ -224,18 +224,16 @@ public class EventLogExtendedCollector : ISecurityCollector
 		foreach (EventEntry scriptEvent in scriptBlockEvents)
 		{
 			ct.ThrowIfCancellationRequested();
-			// Correctif M2 : les messages sont tronqués à 400 caractères dans ReadEvents, seuil abaissé à 350 pour rester dans la limite
-			bool isSuspicious = scriptEvent.Message.Length > 350;
-			if (!isSuspicious)
+			// M5 : la longueur seule n'est PAS un indicateur fiable (faux positifs massifs sur
+			// scripts légitimes longs). On ne se fie qu'aux mots-clés suspects.
+			bool isSuspicious = false;
+			string[] suspiciousPsKeywords = SuspiciousPsKeywords;
+			foreach (string keyword in suspiciousPsKeywords)
 			{
-				string[] suspiciousPsKeywords = SuspiciousPsKeywords;
-				foreach (string keyword in suspiciousPsKeywords)
+				if (scriptEvent.Message.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
-					if (scriptEvent.Message.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
-					{
-						isSuspicious = true;
-						break;
-					}
+					isSuspicious = true;
+					break;
 				}
 			}
 			if (isSuspicious)
