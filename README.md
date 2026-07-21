@@ -4,7 +4,7 @@
 
 ### Auditeur de posture de sécurité Windows 11 — rapide, complet, hors-ligne
 
-**664 contrôles · 49 collecteurs · baselines MSCT & CIS · rapports signés SHA‑256**
+**756 contrôles · 59 collecteurs · baselines MSCT & CIS · rapports signés SHA‑256**
 
 [![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white)](https://www.microsoft.com/windows/windows-11)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
@@ -35,7 +35,7 @@
 **CHECKSEC** analyse en profondeur la configuration de sécurité d'un poste **Windows 11** et la compare aux référentiels **Microsoft Security Compliance Toolkit (MSCT)** et **CIS Benchmark**. Il produit un score, un plan de remédiation priorisé, et des rapports exploitables pour une **étude a posteriori** (forensique / conformité).
 
 - 🔒 **100 % local & hors‑ligne** — aucune donnée ne quitte le poste.
-- ⚡ **Rapide** — 49 collecteurs exécutés **en parallèle**, analyse complète en quelques secondes.
+- ⚡ **Rapide** — 59 collecteurs exécutés **en parallèle**, analyse complète en quelques secondes.
 - 📦 **Portable** — un seul `.exe` auto‑contenu (aucune installation de .NET requise).
 - 🧾 **Rapports riches** — JSON forensique (hash d'intégrité SHA‑256), PDF, Excel, HTML, CEF (SIEM).
 
@@ -55,7 +55,7 @@
 | 🗂️ **Journaux & Forensique** | Vraies erreurs Critical/Error des journaux Windows, taille/rétention des logs, événements de sécurité clés |
 | 💿 **Inventaire** | Logiciels installés (registre + **AppX/MSIX**), logiciels **à risque / EOL**, extensions navigateur, Sysmon |
 
-➡️ **Liste exhaustive des 664 contrôles : [`docs/CHECKS.md`](docs/CHECKS.md)**
+➡️ **Liste exhaustive des 756 contrôles : [`docs/CHECKS.md`](docs/CHECKS.md)** · 🗺️ [Feuille de route](docs/ROADMAP.md)
 
 ---
 
