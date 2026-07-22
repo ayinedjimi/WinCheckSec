@@ -57,6 +57,19 @@ public class GapAnalyzer
 			{
 				continue;
 			}
+			// Correctif N3-bis : une SecurityOption NON registre (KeyPath ni HKLM\ ni HKCU\, ex.
+			// « System Access », « Kerberos Policy ») n'est pas verifiable via le registre. On la
+			// SKIP entierement (aucun ecart emis), comme pour les droits utilisateur — plutot que
+			// d'emettre un faux « conforme » qui gonflait le taux de conformite. Les SecurityOptions
+			// REELLEMENT registre (HKLM/HKCU) gardent leur evaluation normale via AnalyzeSecurityOption.
+			if (policy.Type == PolicyType.SecurityOption)
+			{
+				string secKeyPath = policy.KeyPath ?? string.Empty;
+				if (!(secKeyPath.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase) || secKeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase)))
+				{
+					continue;
+				}
+			}
 			try
 			{
 				ComplianceGap complianceGap = policy.Type switch
@@ -250,7 +263,12 @@ public class GapAnalyzer
 		}
 		if ((valueType.Contains("DWORD", StringComparison.OrdinalIgnoreCase) || valueType.Contains("QWORD", StringComparison.OrdinalIgnoreCase)) && long.TryParse(current, out var currentNum) && long.TryParse(expected, out var expectedNum))
 		{
-			return currentNum == expectedNum;
+			// Normalise les DEUX cotes en NON signe avant comparaison numerique DWORD.
+			// Une valeur DWORD >= 0x80000000 est lue en int signe (negative) : sans
+			// normalisation elle serait faussement declaree non conforme.
+			long currentUnsigned = ((currentNum < 0) ? (long)(uint)currentNum : currentNum);
+			long expectedUnsigned = ((expectedNum < 0) ? (long)(uint)expectedNum : expectedNum);
+			return currentUnsigned == expectedUnsigned;
 		}
 		return string.Equals(current.Trim(), expected.Trim(), StringComparison.OrdinalIgnoreCase);
 	}
@@ -384,7 +402,9 @@ public class GapAnalyzer
 	private ComplianceGap AnalyzeAuditPolicy(BaselinePolicy policy)
 	{
 		Dictionary<string, string> auditPolicies = GetAuditPolicies();
-		string key = ((!string.IsNullOrEmpty(policy.Section)) ? policy.Section : policy.ValueName);
+		// Utilise le nom reel de l'entree (ex. AuditLogonEvents) comme cle de lookup,
+		// pas la constante de SECTION ("Event Audit") qui serait toujours introuvable.
+		string key = policy.ValueName;
 		auditPolicies.TryGetValue(key, out string currentSetting);
 		if (currentSetting == null)
 		{
@@ -604,27 +624,10 @@ public class GapAnalyzer
 
 	private ComplianceGap AnalyzeSecurityOption(BaselinePolicy policy)
 	{
-		// Correctif N3: options « System Access » hors registre (KeyPath non HKLM/HKCU, ex.
-		// LSAAnonymousNameLookup, AllowAdministratorLockout) — non verifiables via le registre.
-		// On ne les compte PLUS comme non-conformites non prouvees (ce qui polluait le taux de
-		// conformite MSCT). Elles deviennent un NON-ecart (IsCompliant = true) de severite Low,
-		// avec une mention explicite de verification manuelle.
-		if (!(policy.KeyPath.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase) || policy.KeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase)))
-		{
-			return new ComplianceGap
-			{
-				PolicyName = "Security Option: " + policy.ValueName,
-				RegistryPath = policy.KeyPath,
-				ValueName = policy.ValueName,
-				BaselineValue = policy.ExpectedValue,
-				CurrentValue = "(vérification manuelle requise)",
-				IsCompliant = true,
-				Severity = GapSeverity.Low,
-				GpoName = policy.GpoName,
-				Description = "Option de sécurité non vérifiable automatiquement via registre — à contrôler manuellement (secedit/GPO)."
-			};
-		}
-		// Branche registre (HKLM/HKCU): evaluation normale conservee.
+		// Correctif N3-bis : les options « System Access » hors registre (KeyPath non HKLM/HKCU)
+		// sont desormais SKIP en amont, dans Analyze (aucun ecart emis). Cette methode ne recoit
+		// donc plus que des SecurityOptions REELLEMENT registre (HKLM/HKCU) et procede a leur
+		// evaluation normale.
 		string currentValue = "(vérification manuelle requise)";
 		bool isCompliant = false;
 		(RegistryHive hive, string subKey) splitPath = SplitRegistryPath(policy.KeyPath);

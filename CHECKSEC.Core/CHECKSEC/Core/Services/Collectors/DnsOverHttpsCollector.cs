@@ -136,14 +136,19 @@ public class DnsOverHttpsCollector : ISecurityCollector
 				int doHPolicy = (doHPolicyValue != null) ? Convert.ToInt32(doHPolicyValue) : 0;
 				string doHPolicyText = doHPolicy switch
 				{
+					1 => "Interdit (DoH prohibé par GPO — DNS en clair)",
 					2 => "Autorisé (DoH autorisé mais non imposé)",
 					3 => "Requis (DoH obligatoire)",
 					_ => "Non configuré",
 				};
+				// Correctif N5 : la valeur 1 (Prohibit DoH) tombait dans le cas par défaut (Info),
+				// masquant un faux négatif. Une GPO/VPN qui INTERDIT DoH force la résolution DNS en
+				// clair (aucune confidentialité) → on la classe désormais en Warning.
 				SecurityStatus doHPolicyStatus = doHPolicy switch
 				{
 					3 => SecurityStatus.OK,
 					2 => SecurityStatus.Info,
+					1 => SecurityStatus.Warning,
 					_ => SecurityStatus.Info,
 				};
 				results.Add(new SecurityResult
@@ -154,7 +159,7 @@ public class DnsOverHttpsCollector : ISecurityCollector
 					ExpectedValue = "Requis (3)",
 					Status = doHPolicyStatus,
 					Description = "État de la politique GPO machine DoHPolicy: " + doHPolicyText + ". Cette stratégie (Policies\\Microsoft\\Windows NT\\DNSClient) impose le comportement DoH sur l'ensemble du poste.",
-					Recommendation = ((doHPolicy == 3) ? "Configuration optimale : DoH imposé par GPO." : ((doHPolicy == 2) ? "DoH autorisé par GPO mais non obligatoire. Définissez DoHPolicy = 3 pour rendre DoH requis." : "DoH non imposé par GPO. Définissez DoHPolicy = 3 (requis) pour forcer le chiffrement des requêtes DNS via GPO.")),
+					Recommendation = ((doHPolicy == 3) ? "Configuration optimale : DoH imposé par GPO." : ((doHPolicy == 2) ? "DoH autorisé par GPO mais non obligatoire. Définissez DoHPolicy = 3 pour rendre DoH requis." : ((doHPolicy == 1) ? "DoH interdit par GPO (DoHPolicy=1) — résolution DNS en clair, pas de confidentialité. Retirez cette interdiction et définissez DoHPolicy = 3 (requis)." : "DoH non imposé par GPO. Définissez DoHPolicy = 3 (requis) pour forcer le chiffrement des requêtes DNS via GPO."))),
 					Reference = "https://learn.microsoft.com/en-us/windows-server/networking/dns/doh-client-support"
 				});
 			}

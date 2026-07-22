@@ -80,12 +80,29 @@ Légende : ✅ **livré** · 🚧 **en cours (vague 1)** · 📋 **planifié (va
 | Scoring pondéré | ✔️ Déjà pondéré (`OK×1 + Warning×0.5 + Critical×0`) |
 | **Mapping MITRE ATT&CK** par contrôle (ex. WDigest → T1003.001) | ✅ livré (JSON : `MitreTechniques` par résultat + `MitreSummary`) |
 | Mapping référentiels (CIS ID, ANSSI BP28, NIST 800-53) | ✔️ CIS mappé · 📋 ANSSI/NIST |
-| Mode Diff / régression entre 2 scans | ✔️ Historique présent — 📋 diff détaillé check-à-check |
-| Corrélation de chaînes d'attaque | 📋 vague 3 |
+| Mode Diff / régression entre 2 scans | ✔️ Historique présent — 📋 **Vague 3** : diff détaillé check-à-check |
+| Corrélation de chaînes d'attaque | 📋 **Vague 3** |
 | Export **SARIF** (CI/CD) | ✅ livré (`--format sarif` + UI) |
-| Profil machine (Workstation/Serveur/PAW) | 📋 |
+| Export **CEF** enrichi (Error + modules en échec) | ✔️ CEF présent — 📋 **Vague 3** : Error / timeouts collecteurs |
+| Profil machine (Workstation/Serveur/PAW) | 📋 **Vague 3** |
 
-> **Correctifs bug-review (v6.2.1+)** : H1 timeout, H3 LAPS, H4 User Rights, H5 score N/A/Error, M5 PS longueur — corrigés. M1 DoH consolidé, M2 PowerShellCollector mort supprimé, M4 Secure Boot harmonisé, M8 CSV RFC 4180, M9 enum DoH — corrigés.
+---
+
+## D. Vague 3 — backlog priorisé (post bug-review)
+
+| Item | Notes |
+|---|---|
+| Historique check-à-check / hash JSON (M7) | Permettre un vrai diff entre deux scans |
+| CEF + Error / échecs modules (L2) | Compléter l’export SIEM |
+| WSL / conteneurs / nested virt (A9) | Collecteur optionnel poste dev |
+| Signatures Authenticode des persistances (A5) | Lots + perf |
+| EPA / tunnels IPv6 / RPC RestrictRemoteClients (A10) | Relay / spoofing |
+| WDAC base vs supplemental / Audit·Enforce (B) | Au-delà d’AppControl actuel |
+| PSRemoting endpoints, Office COM Add-ins, Tasks ACL | Compléments A3 / B |
+
+> **CisFallback (M6)** : clé registre absente = `Warning` — **choix de conception** (policy non déployée = écart). Ne pas « corriger » en Info.
+
+> **Correctifs bug-review** : H1–H5, M1/M2/M4/M5/M8/M9, R1–R8, N1–N3, H2 toolkit externe — traités (voir `BUG_REVIEW.md`).
 
 ---
 

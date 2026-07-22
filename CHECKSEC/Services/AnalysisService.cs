@@ -139,13 +139,27 @@ public sealed class AnalysisService
 			this.ProgressChanged?.Invoke(done, total, $"Collecte en cours — 0/{collectors.Count} modules…");
 			int completedCount = 0;
 			object lockObj = new object();
+			// Timeouts différenciés : 120 s par défaut, 180 s pour les collecteurs lourds (journaux,
+			// forensique, inventaire logiciel, WiFi/netsh, Autoruns, certificats) qui peuvent
+			// légitimement dépasser 120 s sans être bloqués.
+			static int TimeoutFor(ISecurityCollector c)
+			{
+				string name = c.Name ?? string.Empty;
+				bool heavy = name.Contains("Journ", StringComparison.OrdinalIgnoreCase)
+					|| name.Contains("Forensi", StringComparison.OrdinalIgnoreCase)
+					|| name.Contains("Inventaire", StringComparison.OrdinalIgnoreCase)
+					|| name.Contains("WiFi", StringComparison.OrdinalIgnoreCase)
+					|| name.Contains("Autoruns", StringComparison.OrdinalIgnoreCase)
+					|| name.Contains("Certificat", StringComparison.OrdinalIgnoreCase);
+				return heavy ? 180 : 120;
+			}
 			await Task.WhenAll(collectors.Select((ISecurityCollector c) => Task.Run(async delegate
 			{
 				using CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-				// H1 : 120 s par collecteur (au lieu de 30 s). Les collecteurs s'exécutent en
+				// H1 : timeout par collecteur (au lieu de 30 s). Les collecteurs s'exécutent en
 				// parallèle, donc la borne réelle reste le timeout global d'analyse ; 30 s coupait
 				// des collecteurs légitimement lourds (EventLog, SoftwareInventory, WiFi/netsh, AutoRuns).
-				timeoutCts.CancelAfter(TimeSpan.FromSeconds(120L));
+				timeoutCts.CancelAfter(TimeSpan.FromSeconds(TimeoutFor(c)));
 				CollectorReport collectorReport;
 				try
 				{
@@ -156,7 +170,7 @@ public sealed class AnalysisService
 					collectorReport = new CollectorReport
 					{
 						CollectorName = c.Name,
-						ErrorMessage = (ct.IsCancellationRequested ? "Annulé par l'utilisateur." : "Temps d'exécution dépassé (Timeout 120s).")
+						ErrorMessage = (ct.IsCancellationRequested ? "Annulé par l'utilisateur." : "Temps d'exécution dépassé (Timeout dépassé).")
 					};
 				}
 				catch (Exception ex)
@@ -307,6 +321,10 @@ public sealed class AnalysisService
 		TryAdd<FileSystemAclCollector>(collectors);
 		TryAdd<BootIntegrityCollector>(collectors);
 		TryAdd<SchannelCryptoCollector>(collectors);
+		// Fiabilisation ciblée (P0/P1)
+		TryAdd<PersistenceSignatureCollector>(collectors);
+		TryAdd<WdacDetailCollector>(collectors);
+		TryAdd<ScheduledTaskAclCollector>(collectors);
 		return collectors;
 	}
 

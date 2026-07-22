@@ -126,7 +126,9 @@ public static class MitreMapper
 		// --- Credential Access : Wi-Fi ouvert (contexte AiTM) ---
 		// Correctif N1: « open » (sous-chaîne trop générique) retiré au profit de motifs explicites
 		// correspondant au check WiFi réel.
-		new MappingRule(new[] { "WiFi", "réseau ouvert", "Réseaux ouverts", "open network" }, new[] { T1557 }),
+		// Resserrement MITRE: le mot-clé générique « WiFi » est RETIRÉ — T1557 ne doit viser QUE les
+		// réseaux ouverts (contexte AiTM), pas tout contrôle WiFi. On ne garde que les motifs explicites.
+		new MappingRule(new[] { "réseau ouvert", "Réseaux ouverts", "open network" }, new[] { T1557 }),
 
 		// --- Credential Access : Kerberos (types de chiffrement faibles) ---
 		// Correctif N1: « RC4 » retiré (cipher Schannel, pas du Kerberoasting). On exige désormais
