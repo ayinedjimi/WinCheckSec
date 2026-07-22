@@ -4,7 +4,7 @@
 
 ### Auditeur de posture de sécurité Windows 11 — rapide, complet, hors-ligne
 
-**756 contrôles · 59 collecteurs · baselines MSCT & CIS · rapports signés SHA‑256**
+**756 contrôles · 62 collecteurs · baselines MSCT & CIS · rapports signés SHA‑256**
 
 [![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white)](https://www.microsoft.com/windows/windows-11)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
@@ -35,7 +35,7 @@
 **CHECKSEC** analyse en profondeur la configuration de sécurité d'un poste **Windows 11** et la compare aux référentiels **Microsoft Security Compliance Toolkit (MSCT)** et **CIS Benchmark**. Il produit un score, un plan de remédiation priorisé, et des rapports exploitables pour une **étude a posteriori** (forensique / conformité).
 
 - 🔒 **100 % local & hors‑ligne** — aucune donnée ne quitte le poste.
-- ⚡ **Rapide** — 59 collecteurs exécutés **en parallèle**, analyse complète en quelques secondes.
+- ⚡ **Rapide** — 62 collecteurs exécutés **en parallèle**, analyse complète en quelques secondes.
 - 📦 **Portable** — un seul `.exe` auto‑contenu (aucune installation de .NET requise).
 - 🧾 **Rapports riches** — JSON forensique (hash d'intégrité SHA‑256), PDF, Excel, HTML, CEF (SIEM).
 
@@ -66,7 +66,7 @@
 2. Double‑cliquez. Acceptez l'invite **UAC** (l'analyse nécessite des privilèges administrateur).
 3. Cliquez sur **Lancer l'analyse**.
 
-> Prérequis : Windows 11 x64 + [**Microsoft Visual C++ Redistributable (x64)**](https://aka.ms/vs/17/release/vc_redist.x64.exe). CHECKSEC le détecte au démarrage et propose son téléchargement s'il manque. .NET et WindowsAppSDK sont **embarqués** — rien d'autre à installer.
+> Prérequis : **Windows 11 x64 uniquement — rien à installer.** L'exe est **100 % autonome** : .NET 9, WindowsAppSDK/WinUI **et le runtime Visual C++** sont tous embarqués dans le single-file (auto-extraits au lancement). Fonctionne sur un Windows vierge.
 
 ### Option 2 — Mode headless (CLI / automatisation)
 ```powershell

@@ -19,6 +19,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
+    <!-- Embarque AUSSI le contenu (dont le runtime VC++) dans le single-file et l'extrait
+         à côté des DLL natives WinUI → exe 100% autonome, sans dépendance externe. -->
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <!-- On fournit notre propre Main (Program.cs) pour vérifier le runtime VC++ AVANT tout appel natif WindowsAppSDK -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AssemblyVersion>6.1.0.0</AssemblyVersion>
@@ -63,6 +66,15 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
+  </ItemGroup>
+
+  <!-- Runtime Visual C++ x64 embarqué (les composants natifs WinUI/WindowsAppSDK en dépendent).
+       Copiés à la racine de sortie puis inclus dans le single-file → plus besoin du VC++ Redistributable. -->
+  <ItemGroup>
+    <None Include="vcredist\*.dll">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
