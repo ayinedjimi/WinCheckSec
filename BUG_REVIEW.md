@@ -1,13 +1,9 @@
-# CHECKSEC — Bug Review (3ᵉ passe — post `d7b10e1`)
+# CHECKSEC — Bug Review ultra-complet
 
 **Date :** 2026-07-22  
-**Base :** commit `d7b10e1` (*Fix re-audit : regressions R1-R8 + N1-N3 + H2*)  
-**Périmètre :** `c:\CHECKSEC\src`  
-**Objectif :** vérifier absences de régressions, nouveaux bugs, fiabilité / collecteurs manquants.
-
-**Choix produit acceptés (hors scope correctif) :**
-- **M6** CisFallback : clé absente = Warning — *policy non déployée = écart* (conception volontaire).
-- **M7** historique check-à-check, **L2** CEF+Error, collecteurs roadmap (WSL, signatures persistance, EPA/IPv6, WDAC détaillé) → **Vague 3** (`docs/ROADMAP.md`).
+**Base :** `9a50b0d` (Vague 4) + historique `d7b10e1` → `ab35b4b`  
+**Périmètre :** tout le code source sous `c:\CHECKSEC\src` (UI + Core)  
+**Méthode :** revue statique exhaustive — orchestration, 62 collecteurs, GapAnalyzer/MSCT/CIS, scoring, Mitre/SARIF/CEF/JSON, nouveaux modules Vague 4.
 
 ---
 
@@ -15,127 +11,184 @@
 
 | Domaine | Verdict |
 |---|---|
-| Correctifs R1–R8 / N1–N3 / H2 | **Validés** — pas de régression majeure sur le périmètre annoncé |
-| Nouveau bug | **DoHPolicy = 1 (Prohibit)** mal étiqueté « Non configuré » / Info |
-| Résidus mineurs | N3 gonfle encore légèrement le % MSCT ; Mitre `WiFi` trop large ; toolkit = fichier ZIP ou baseline dézippée non gérés |
-| Collecteurs manquants | Reportés Vague 3 (OK) ; couverture actuelle = **59** collecteurs enregistrés |
+| Correctifs antérieurs (H1–H5, R1–R8, N1–N5, ACL composites, CiTool deadlock…) | **Globalement solides** |
+| Vague 4 (+3 collecteurs) | **ROI élevé**, qualité correcte ; quelques limites de couverture |
+| **Bug HAUTE** ouvert | Lookup audit MSCT par **GUID** → écarts audit **toujours « non configuré »** (régression Vague 4) |
+| **Bug MOYENNE** | `ScheduledTaskAclCollector` profondeur 1 → rate la majorité des tâches `Microsoft\Windows\…` |
+| **Bug MOYENNE** | Timeouts différenciés **n’incluent pas** Signatures / WDAC / Tasks ACL (risque timeout 120 s) |
+| Stubs / fake | CisFallback semi-manuel (M6 accepté) ; pas de collecteur vide |
+| Exports | JSON/SARIF **fiables** ; CEF encore sans Error ; Historique agrégé (Vague 3) |
+| Collecteurs manquants | WSL, EPA/IPv6 détaillé, COM Add-ins, etc. (Vague 3) |
+
+**Score de maturité estimé :** outil prêt pour audit terrain, avec **1 correctif urgent** (audit MSCT) avant confiance totale sur les écarts de conformité.
 
 ---
 
-## 1. Vérification des correctifs `d7b10e1`
+## A. Inventaire
 
-| ID | Attendu | Statut | Notes |
+### A.1 Orchestration
+- `AnalysisService.BuildCollectors()` : **62** collecteurs via `TryAdd<>`
+- Timeout : **120 s** défaut / **180 s** si nom contient Journ|Forensi|Inventaire|WiFi|Autoruns|Certificat
+- Score global : exclut Info, NotApplicable, Error
+- Score catégorie (`SecurityScore`) : `Total - Info - Error` (aligné)
+- Secure Core : préférence lignes WMI/Running ; Secure Boot canonique
+
+### A.2 Collecteurs enregistrés (62)
+
+SystemInfo, VbsSecurity, Defender, SecurityCenter, Firewall, BitLocker, AppControl, NetworkSec, EventLog, AuditPolicy, UserAccounts, Tls, AdditionalSecurity, AutoRuns, ProcessDriver, NetworkShares, ScreenLock, OfficeMacro, SoftwareInventory, Kerberos, EventLogExtended, Mde, WindowsUpdateDetail, Certificate, AzureAd, Hardening, AsrRules, Laps, DnsOverHttps, SmbHardening, PrintSpooler, WDigest, LsaProtection, ExploitProtection, RdpHardening, CisFallback, UacDetail, CredentialDelegation, WindowsSandbox, Bluetooth, WifiSecurity, SecureBootPolicy, BrowserHardening, SystemHardeningExtra, RemoteAccessExtra, LocalGroup, LogConfig, NetworkServicesHardening, DomainAuthHardening, Amsi, ProxyNetwork, UserRights, WindowsLaps, ModernWindowsFeatures, AdvancedPersistence, DefenderExclusions, FileSystemAcl, BootIntegrity, SchannelCrypto, **PersistenceSignature**, **WdacDetail**, **ScheduledTaskAcl**.
+
+### A.3 Exports
+| Canal | Fiabilité |
+|---|---|
+| JSON (`ReportJsonBuilder`) | Haute — schéma unifié, Integrity SHA-256, Mitre, Diagnostics |
+| SARIF 2.1.0 | Haute — findings + Gaps MSCT + partialFingerprints |
+| CSV dashboard | Haute — RFC 4180 |
+| Excel/PDF pages | Correcte — vue filtrée |
+| CEF | Partielle — Critical/Warning/Gaps ; **pas Error ni modules timeout** |
+| Historique | Faible forensique — agrégats uniquement (Vague 3) |
+
+---
+
+## B. Bugs ouverts (code actuel)
+
+### Sévérité HAUTE
+
+| ID | Localisation | Problème | Impact |
 |---|---|---|---|
-| **R1** message timeout | « Timeout 120s » | ✅ | `AnalysisService.cs` |
-| **R2** LAPS fantôme Additional | retiré | ✅ | Délégué WindowsLaps + Laps legacy |
-| **R3/M10** User Rights Gaps | skip (pas de gap fantôme) | ✅ | `continue` si `UserRightsAssignment` — vérité = `UserRightsCollector` |
-| **R4** DoHPolicy | réintégré | ✅ *avec bug N5* | Voir §2 |
-| **R5** ScorePercent | exclut Error | ✅ | `Total - Info - Error` |
-| **R6** libellé EventLog | mots-clés seuls | ✅ | |
-| **R7/M3** CLM | registre Session Manager | ✅ | `Info` si non forcé (ne pollue pas le score) |
-| **R8** code mort LAPS | supprimé | ✅ | |
-| **N1** Mitre | mots génériques retirés | ✅ | `RequireAlso` OK pour Kerberos+chiffrement |
-| **N2** SARIF | Gaps MSCT + fingerprints | ✅ | |
-| **N3** SecurityOption hors registre | non-écart | ✅ *nuance* | `IsCompliant=true` plutôt que skip → léger gonflement % (voir §3) |
-| **H2** toolkit externe prioritaire | oui | ✅ *limites* | Voir §3 |
+| **H-AUDIT** | `GapAnalyzer.AnalyzeAuditPolicy` | Lookup `auditPolicies[policy.ValueName]` alors que la baseline embarquée met des **GUID** (`{0cce923f-…}`) dans `ValueName`, et `auditpol /r` indexe par **nom de sous-catégorie** (`Credential Validation`). | **Tous** les contrôles Audit MSCT embarqués → `(non configuré)` / non conformes → **pollution massive des Gaps** + taux MSCT faux. Régression Vague 4 (« clé audit réelle » a empiré le cas embarqué). |
+
+**Correctif recommandé :**  
+`key = StripPrefix(policy.Section, "Audit ")` (ex. `"Audit Credential Validation"` → `"Credential Validation"`), avec fallback Section/ValueName ; ou table GUID→nom.
 
 ---
 
-## 2. Nouveau bug
+### Sévérité MOYENNE
 
-### N5 — DoHPolicy = 1 (Prohibit DoH) mal classé — **moyenne**
+| ID | Localisation | Problème | Impact |
+|---|---|---|---|
+| **M-TASKS-DEPTH** | `ScheduledTaskAclCollector` `MaxDepth = 1` | N’énumère que `Tasks\` + un niveau (`Tasks\Microsoft\…` fichiers directs). La majorité des tâches sont sous `Tasks\Microsoft\Windows\…` (profondeur ≥ 2). | Faux sentiment de propreté : synthèse « 0 à risque » alors que des tâches utilisateur/suspectes plus profondes ne sont **pas** vues. |
+| **M-TIMEOUT-V4** | `AnalysisService.TimeoutFor` | Noms « Signatures de persistance », « WDAC… », « Tâches planifiées… » **hors** liste 180 s. | Jusqu’à 150× WinVerifyTrust / parcours Tasks → risque **Timeout 120 s** → module Error, scan partiel. |
+| **M-DOUBLE-WDAC** | `AppControlCollector` + `WdacDetailCollector` | Deux modules scorent WDAC (présence vs détail). | Bruit / double pénalité ou double Info ; score Application Control dilué. Consolider ou marquer AppControl WDAC en Info quand WdacDetail OK. |
+| **M-MITRE-LSA** | `MitreMapper` | Mot-clé `"LSA"` seul → T1547.005 en plus de T1003.001 sur « LSA Protection ». | Faux mapping ATT&CK bénin. |
+| **M-SCORE-EMPTY** | `SecurityScore.ComputeScore` | `applicable == 0` → **100 %**. | Catégorie 100 % Error → grade A trompeur (rare). |
 
-**Fichier :** `DnsOverHttpsCollector.cs` ~L135–148  
+---
 
-Valeurs Microsoft officielles :
-| Valeur | Sens |
+### Sévérité FAIBLE
+
+| ID | Localisation | Problème |
+|---|---|---|
+| **L-PERSIST-SCOPE** | `PersistenceSignatureCollector` | Couvre Run/RunOnce, services non-MS, Winlogon — **pas** tâches planifiées / IFEO / COM (partiellement ailleurs). Cap 150. |
+| **L-REVOKE** | WinVerifyTrust `WTD_REVOKE_NONE` | Pas de check révocation réseau — perf OK, certs révoqués récents peuvent passer Trusted. |
+| **L-TASKS-ACL-FOLDER** | Tasks ACL | Dossier : seuls Delete/ChangePerm/TakeOwnership (volontaire vs défaut Write AuthUsers). CreateFiles sur **fichier** de tâche toujours dangereuse — OK. Documenter le trade-off. |
+| **L-WDAC-FALLBACK-HVCI** | `WdacDetailCollector` fallback | Lit `HypervisorEnforcedCodeIntegrity\Enabled` comme signal voisin — ce n’est **pas** UMCI ; risque de confusion dans le raisonnement fallback (CiTool absent). |
+| **L-CEF** | `CefExportService` | Pas d’événements `Error` ni `CollectorFailed`. |
+| **L-HISTORY** | `HistoryService` | Pas de snapshot check-à-check. |
+| **L-CONVERTERS** | Hex/DateTime `ConvertBack` | `NotImplementedException` (one-way OK). |
+
+---
+
+## C. Statut des bugs des reviews précédents
+
+| ID | Statut |
 |---|---|
-| **1** | **Prohibit DoH** (interdit le chiffrement DNS) |
-| 2 | Allow DoH |
-| 3 | Require DoH |
-
-Code actuel : `1` tombe dans `_ => "Non configuré"` + `SecurityStatus.Info`.
-
-**Impact :** une GPO (ou VPN) qui **interdit** DoH est rapportée comme absente / neutre — **faux négatif** de posture.  
-**Correctif :** `1 => Warning` (ou Critical) + libellé « DoH interdit (Prohibit) ».
-
----
-
-## 3. Résidus / risques résiduels (pas des régressions bloquantes)
-
-### N3-bis — SecurityOption manuelles comptées « conformes »
-- User Rights : **skip** (n’entrent pas dans le dénominateur MSCT).  
-- SecurityOption hors HKLM/HKCU : **`IsCompliant = true`** → entrent dans `CountCompliant` et **gonflent** le taux.  
-- Amélioration cohérente : `continue` comme pour User Rights, ou statut dédié « non évalué » exclu du %.
-
-### H2-bis — Toolkit externe : cas non couverts
-- `FindBaselineZip()` exige un **répertoire** ; si Settings pointe vers un **fichier `.zip`**, `File.Exists` ouvre le chemin externe puis échoue → fallback embarqué.  
-- Baseline **déjà extraite** (pas de ZIP, dossiers GPO) : non détectée → fallback embarqué.  
-Impact : H2 fonctionne pour le cas nominal (dossier MSCT contenant un ZIP Baseline).
-
-### Mitre — `WiFi` encore large (faible)
-- Règle `WiFi | réseau ouvert | …` : le mot **`WiFi` seul** mappe **tous** les contrôles WiFi vers T1557, pas seulement les réseaux ouverts.  
-- Idem `"LSA"` peut ajouter T1547.005 à côté de T1003.001 sur « LSA Protection » (double mapping bénin).
-
-### SecurityScore edge case (faible)
-- Catégorie **uniquement** Error (+Info) → `applicable == 0` → **ScorePercent = 100**. Rare.
+| H1 timeout 30s → 120/180 | ✅ |
+| H2 / H2-bis toolkit externe ZIP + dossier dézippé | ✅ |
+| H3 LAPS mauvais chemin | ✅ |
+| H4 / R3 User Rights Gaps | ✅ skip |
+| H5 score N/A/Error | ✅ |
+| N5 DoHPolicy=1 Prohibit | ✅ Warning |
+| N3-bis SecurityOption non-registre | ✅ skip |
+| N1 Mitre WiFi resserré | ✅ |
+| ACL Modify/FullControl faux Critical | ✅ (FS + Tasks + Reg) |
+| CiTool deadlock stdout/stderr | ✅ |
+| WinVerifyTrust Win32→Error, rundll32, DestroyStructure | ✅ |
+| MsctToolkitParser `=`/`,` DWORD | ✅ |
+| M6 CisFallback clé absente = Warning | ✅ **choix produit** |
+| M7 / L2 CEF Error / Vague 3 collectors | 📋 backlog |
 
 ---
 
-## 4. Pas de régression constatée sur
+## D. Revue des 3 collecteurs Vague 4
 
-- Timeout 120 s + message aligné  
-- DoH unique (`DnsOverHttpsCollector`) + EnableAutoDoh  
-- LAPS (plus de faux Warning Additional)  
-- Secure Boot canonique  
-- Score global / catégorie alignés (Error exclus)  
-- CSV RFC 4180, SARIF Gaps+fingerprints, Integrity JSON  
-- Suppression code mort LAPS / PowerShellCollector mort  
+### D.1 `PersistenceSignatureCollector` — **Bonne**
+- WinVerifyTrust + catalogue, ghost rooted vs relatif, rundll32 DLL, cap 150, synthèse claire.
+- Limites : scope (pas Tasks/IFEO), timeout non heavy, révocation off.
+- Pas de stub.
+
+### D.2 `WdacDetailCollector` — **Bonne**
+- CiTool JSON prioritaire ; Error explicite si échec ; fallback .cip + Error si dossier illisible.
+- Base vs supplemental via PolicyID==BasePolicyID ; Audit→Warning, Enforce→Info/OK.
+- Limites : double emploi avec AppControl ; fallback mode moins fiable.
+
+### D.3 `ScheduledTaskAclCollector` — **Moyenne (couverture)**
+- XML + ACL SID-invariants ; pas de schtasks localisé — excellent design.
+- **Faiblesse majeure :** `MaxDepth=1` sous-échantillonne fortement.
+- Recommandation : `MaxDepth=3` ou 4 + garder cap 200–500 ; ou BFS priorisant hors `Microsoft\Windows` puis échantillon.
 
 ---
 
-## 5. Fiabilisation — état
+## E. Fiabilité transverse des collecteurs
 
-| Amélioration | État |
+| Thème | État |
 |---|---|
-| Timeout collecteurs lourds | ✅ |
-| Score sans N/A / Error | ✅ |
-| MSCT externe prioritaire | ✅ (limites H2-bis) |
-| DoH consolidé + GPO | ✅ (fix N5) |
-| CLM via registre | ✅ |
-| Mitre resserré | ✅ (WiFi à affiner) |
-| SARIF CI-friendly | ✅ |
-| CisFallback clé absente = Warning | ✅ **choix M6 accepté** |
+| Timeout / annulation | Bon (sauf liste heavy incomplète) |
+| Error vs posture | Globalement respecté (WDAC, LAPS, ACL illisible→Info) |
+| Doublons contradictoires | DoH/LAPS/SecureBoot OK ; WDAC encore double |
+| Locale | WiFi XML, Tasks XML, secedit SID — bons ; auditpol noms encore sensibles à la langue |
+| Running vs config | Secure Core OK ; à étendre (Tamper, NP…) |
+| Admin required | UserRights, CiTool, certaines ACL — Error explicite |
 
 ---
 
-## 6. Collecteurs / features manquants
+## F. Code factice / placeholders
 
-**Hors scope immédiat** — Vague 3 (confirmé avec toi / à refléter dans ROADMAP) :
-
-| Item | Priorité Vague 3 |
+| Élément | Nature |
 |---|---|
-| Historique diff check-à-check (M7) | P1 |
-| CEF : Error + modules en échec (L2) | P2 |
-| WSL / conteneurs (A9) | P1 |
-| Signatures Authenticode persistance (A5) | P1 |
-| EPA / IPv6 tunnels / RPC (A10) | P1 |
-| WDAC base vs supplemental / Enforce (B) | P1 |
-| PSRemoting endpoints (A3) | P2 |
-| Office COM Add-ins, Tasks ACL, etc. | P2 |
-
-**Couverture actuelle :** 59 collecteurs dans `BuildCollectors()` — pas de fichier collecteur orphelin majeur (PowerShellCollector retiré volontairement ; CLM compensé).
+| `CisFallbackCollector` | Semi-automatique ; non-HKLM → Info ; clé absente → Warning (**M6**) |
+| MSCT User Rights / SecurityOption non-registre | **Skip** (pas de faux conforme) |
+| Baseline embarquée | Fallback légitime si toolkit externe vide |
+| PowerShellCollector | **Supprimé** ; CLM via AdditionalSecurity (registre) |
 
 ---
 
-## 7. Plan d’action court
+## G. Collecteurs / features manquants (pertinents)
 
-1. **Corriger N5** — `DoHPolicy == 1` → Prohibit / Warning.  
-2. **Optionnel N3-bis** — skip SecurityOption non-registre (comme User Rights).  
-3. **Optionnel H2-bis** — accepter un path ZIP fichier ; parser dossier déjà extrait.  
-4. **Optionnel Mitre** — exiger « ouvert/open network » pour WiFi → T1557 ; retirer `"LSA"` seul.  
-5. **Vague 3** — M7, L2 CEF, WSL, signatures, EPA/IPv6, WDAC.
+| Priorité | Item | Notes |
+|---|---|---|
+| P0 | **Fix H-AUDIT** | Avant tout nouveau module |
+| P0 | Approfondir Tasks (`MaxDepth`) + timeout Signatures | Fiabilisation Vague 4 |
+| P1 | WSL / Docker / nested virt | Roadmap A9 |
+| P1 | EPA / LDAP signing+channel binding, IPv6 tunnels détaillés, RPC RestrictRemoteClients | A10 (IPv6 partiel existe) |
+| P1 | Office COM Add-ins | ≠ macros |
+| P2 | CEF Error + modules ; Historique diff ; profil Workstation/Server/PAW | Transverse |
+| P2 | PSRemoting endpoints ; Firewall Any-Any listées ; Print drivers WHQL | B |
+| P2 | Signatures aussi sur Tasks/IFEO (étendre PersistenceSignature) | Complément A5 |
 
 ---
 
-*Revue statique. N5 confirmé contre la doc Microsoft DoHPolicy (1=Prohibit, 2=Allow, 3=Require).*
+## H. Plan d’action priorisé
+
+1. **H-AUDIT** — mapper Section/GUID → nom subcategory auditpol (critique conformité MSCT).  
+2. **M-TASKS-DEPTH** — augmenter profondeur + éventuellement prioriser hors Microsoft.  
+3. **M-TIMEOUT-V4** — ajouter Signatures / WDAC / Tâches planifiées / EventLogExtended à la liste 180 s (ou timeout par type).  
+4. **M-DOUBLE-WDAC** — réduire bruit AppControl vs WdacDetail.  
+5. Mitre `"LSA"` → retirer ou RequireAlso.  
+6. Vague 3 : WSL, EPA, historique, CEF Error.
+
+---
+
+## I. Ce qui est solide (ne pas casser)
+
+- Score sans Error/N/A ; timeouts 120/180  
+- Toolkit MSCT externe (ZIP fichier + dossier)  
+- DoH unique + Prohibit=Warning  
+- ACL sans composites Modify/FullControl  
+- PersistenceSignature WinVerifyTrust + anti-faux-ghost  
+- WdacDetail CiTool parallèle + Error droits  
+- JSON Integrity + SARIF fingerprints + Mitre resserré WiFi  
+- 62 collecteurs, couverture poste Windows très large  
+
+---
+
+*Revue 100 % statique. H-AUDIT vérifié contre `MsctBaselineData` (ValueName=GUID) et `GetAuditPolicies` (clé=nom subcategory auditpol).*
