@@ -33,13 +33,92 @@ public class MsctToolkitParser
 
 	public async Task<List<BaselinePolicy>> ParseAsync(CancellationToken ct = default(CancellationToken))
 	{
+		// Correctif H2: PRIORITE au toolkit MSCT EXTERNE de l'organisation lorsqu'il est fourni
+		// et existant. On ne retombe sur la baseline embarquee qu'en cas d'echec (exception,
+		// 0 policy, ou chemin absent). Auparavant la baseline embarquee etait TOUJOURS retournee
+		// en premier, rendant le chemin _toolkitPath (externe) mort.
+		if (!string.IsNullOrWhiteSpace(_toolkitPath) && (File.Exists(_toolkitPath) || Directory.Exists(_toolkitPath)))
+		{
+			List<BaselinePolicy> externalPolicies = new List<BaselinePolicy>();
+			try
+			{
+				string tempDir = Path.Combine(Path.GetTempPath(), $"CHECKSEC_MSCT_{Guid.NewGuid():N}");
+				try
+				{
+					Directory.CreateDirectory(tempDir);
+					bool extracted = false;
+					string zipPath = FindBaselineZip();
+					if (zipPath != null)
+					{
+						await Task.Run(delegate
+						{
+							ZipFile.ExtractToDirectory(zipPath, tempDir, overwriteFiles: true);
+						}, ct);
+						extracted = true;
+					}
+					if (extracted)
+					{
+						ct.ThrowIfCancellationRequested();
+						await Task.Run(delegate
+						{
+							BuildGpoNameMap(tempDir);
+						}, ct);
+						ct.ThrowIfCancellationRequested();
+						await Task.Run(delegate
+						{
+							ParseAllRegistryPol(tempDir, externalPolicies, ct);
+						}, ct);
+						ct.ThrowIfCancellationRequested();
+						await Task.Run(delegate
+						{
+							ParseAllGptTmpl(tempDir, externalPolicies, ct);
+						}, ct);
+						ct.ThrowIfCancellationRequested();
+						await Task.Run(delegate
+						{
+							ParseAllAuditCsv(tempDir, externalPolicies, ct);
+						}, ct);
+					}
+					else
+					{
+						ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Toolkit externe present mais aucune baseline (ZIP) trouvee — repli sur baseline embarquee.");
+					}
+				}
+				finally
+				{
+					try
+					{
+						Directory.Delete(tempDir, recursive: true);
+					}
+					catch (Exception ex3)
+					{
+						ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Cleanup temp directory failed: " + ex3.Message, ex3);
+					}
+				}
+				// Succes: le toolkit externe a produit au moins une policy → on le retourne en priorite.
+				if (externalPolicies.Count > 0)
+				{
+					ErrorLogger.Log(LogLevel.Info, $"[MsctToolkitParser] toolkit externe: {externalPolicies.Count} policies");
+					return externalPolicies;
+				}
+				ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Toolkit externe: 0 policy — repli sur baseline embarquee.");
+			}
+			catch (OperationCanceledException)
+			{
+				// Propagation de l'annulation (aucun repli en cas d'annulation).
+				throw;
+			}
+			catch (Exception exExternal)
+			{
+				ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Echec toolkit externe: " + exExternal.Message + " — repli sur baseline embarquee.", exExternal);
+			}
+		}
+
+		// FALLBACK: baseline embarquee (comportement historique conserve).
 		try
 		{
 			List<BaselinePolicy> embeddedPolicies = ParseFromEmbeddedData(ct);
-			if (embeddedPolicies.Count > 0)
-			{
-				return embeddedPolicies;
-			}
+			return embeddedPolicies;
 		}
 		catch (OperationCanceledException)
 		{
@@ -49,71 +128,7 @@ public class MsctToolkitParser
 		{
 			ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Embedded data fallback: " + ex2.Message, ex2);
 		}
-		List<BaselinePolicy> policies = new List<BaselinePolicy>();
-		try
-		{
-			string tempDir = Path.Combine(Path.GetTempPath(), $"CHECKSEC_MSCT_{Guid.NewGuid():N}");
-			try
-			{
-				Directory.CreateDirectory(tempDir);
-				bool extracted = false;
-				string zipPath = FindBaselineZip();
-				if (zipPath != null)
-				{
-					await Task.Run(delegate
-					{
-						ZipFile.ExtractToDirectory(zipPath, tempDir, overwriteFiles: true);
-					}, ct);
-					extracted = true;
-				}
-				if (!extracted)
-				{
-					ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Aucune baseline MSCT trouvee (ni embarquee, ni externe).");
-					return policies;
-				}
-				ct.ThrowIfCancellationRequested();
-				await Task.Run(delegate
-				{
-					BuildGpoNameMap(tempDir);
-				}, ct);
-				ct.ThrowIfCancellationRequested();
-				await Task.Run(delegate
-				{
-					ParseAllRegistryPol(tempDir, policies, ct);
-				}, ct);
-				ct.ThrowIfCancellationRequested();
-				await Task.Run(delegate
-				{
-					ParseAllGptTmpl(tempDir, policies, ct);
-				}, ct);
-				ct.ThrowIfCancellationRequested();
-				await Task.Run(delegate
-				{
-					ParseAllAuditCsv(tempDir, policies, ct);
-				}, ct);
-				ErrorLogger.Log(LogLevel.Info, $"[MsctToolkitParser] Parsed {policies.Count} policies total (filesystem fallback).");
-			}
-			finally
-			{
-				try
-				{
-					Directory.Delete(tempDir, recursive: true);
-				}
-				catch (Exception ex3)
-				{
-					ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Cleanup temp directory failed: " + ex3.Message, ex3);
-				}
-			}
-		}
-		catch (OperationCanceledException)
-		{
-			ErrorLogger.Log(LogLevel.Info, "[MsctToolkitParser] Parsing annule.");
-		}
-		catch (Exception ex5)
-		{
-			ErrorLogger.Log(LogLevel.Error, "[MsctToolkitParser] Erreur: " + ex5.Message, ex5);
-		}
-		return policies;
+		return new List<BaselinePolicy>();
 	}
 
 	private string? FindBaselineZip()

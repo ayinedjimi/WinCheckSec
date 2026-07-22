@@ -156,7 +156,7 @@ public sealed class AnalysisService
 					collectorReport = new CollectorReport
 					{
 						CollectorName = c.Name,
-						ErrorMessage = (ct.IsCancellationRequested ? "Annulé par l'utilisateur." : "Temps d'exécution dépassé (Timeout 30s).")
+						ErrorMessage = (ct.IsCancellationRequested ? "Annulé par l'utilisateur." : "Temps d'exécution dépassé (Timeout 120s).")
 					};
 				}
 				catch (Exception ex)

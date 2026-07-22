@@ -20,7 +20,8 @@ public class SecurityScore
 
 	public int InfoChecks { get; set; }
 
-	public double ScorePercent => ComputeScore(PassedChecks, WarningChecks, CriticalChecks, TotalChecks - InfoChecks);
+	// R5 : exclure aussi les Error du dénominateur, comme le score global
+	public double ScorePercent => ComputeScore(PassedChecks, WarningChecks, CriticalChecks, TotalChecks - InfoChecks - ErrorChecks);
 
 	public string Grade => ComputeGrade(ScorePercent);
 

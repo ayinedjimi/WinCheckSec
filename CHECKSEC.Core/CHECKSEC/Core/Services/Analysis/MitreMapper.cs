@@ -37,7 +37,7 @@ public static class MitreMapper
 	private static readonly MitreTechnique T1546_010 = new("T1546.010", "Event Triggered Execution: AppInit DLLs", "Persistence");
 	private static readonly MitreTechnique T1546_009 = new("T1546.009", "Event Triggered Execution: AppCert DLLs", "Persistence");
 	private static readonly MitreTechnique T1053_005 = new("T1053.005", "Scheduled Task/Job: Scheduled Task", "Persistence");
-	private static readonly MitreTechnique T1543_003 = new("T1543.003", "Create or Modify System Process: Windows Service", "Persistence");
+	// Correctif N1: T1543_003 (Windows Service) supprimé — mapping « Service » retiré (faux positifs).
 	private static readonly MitreTechnique T1021_001 = new("T1021.001", "Remote Services: Remote Desktop Protocol", "Lateral Movement");
 	private static readonly MitreTechnique T1021_006 = new("T1021.006", "Remote Services: Windows Remote Management", "Lateral Movement");
 	private static readonly MitreTechnique T1558 = new("T1558", "Steal or Forge Kerberos Tickets", "Credential Access");
@@ -50,8 +50,10 @@ public static class MitreMapper
 	/// <summary>
 	/// Une règle de correspondance : si l'un des <see cref="Keywords"/> apparaît (insensible à la casse)
 	/// dans le nom du contrôle ou dans la catégorie, alors les <see cref="Techniques"/> sont ajoutées.
+	/// <see cref="RequireAlso"/> (optionnel) impose une condition ET supplémentaire : au moins un de
+	/// ces motifs doit AUSSI être présent pour que la règle s'applique (resserrement des faux positifs).
 	/// </summary>
-	private sealed record MappingRule(string[] Keywords, MitreTechnique[] Techniques);
+	private sealed record MappingRule(string[] Keywords, MitreTechnique[] Techniques, string[]? RequireAlso = null);
 
 	// Table de correspondance mot-clé -> technique(s). Ordre = ordre d'évaluation.
 	private static readonly MappingRule[] Rules = new[]
@@ -60,7 +62,8 @@ public static class MitreMapper
 		new MappingRule(new[] { "WDigest", "LSASS", "Credential Guard", "RunAsPPL", "LSA Protection" }, new[] { T1003_001 }),
 
 		// --- Credential Access : empoisonnement de résolution de noms ---
-		new MappingRule(new[] { "LLMNR", "NBT-NS", "NBT", "mDNS", "WPAD" }, new[] { T1557_001 }),
+		// Correctif N1: « NBT » court retiré (trop générique) → on exige « NBT-NS ».
+		new MappingRule(new[] { "LLMNR", "NBT-NS", "mDNS", "WPAD" }, new[] { T1557_001 }),
 
 		// --- Credential Access : SMB signing (relais AiTM) ---
 		new MappingRule(new[] { "SMB Signing", "SMB signing" }, new[] { T1557 }),
@@ -84,7 +87,9 @@ public static class MitreMapper
 		new MappingRule(new[] { "ASR", "Attack Surface Reduction" }, new[] { T1562 }),
 
 		// --- Execution : macros Office / VBA (exécution utilisateur + interpréteur VBA) ---
-		new MappingRule(new[] { "Macro", "VBA", "Office" }, new[] { T1204_002, T1059_005 }),
+		// Correctif N1: « Office » seul retiré (matchait tout contrôle Office). On ne mappe que
+		// sur des vecteurs réels : Macro, VBA, ActiveX ou DDE.
+		new MappingRule(new[] { "Macro", "VBA", "ActiveX", "DDE" }, new[] { T1204_002, T1059_005 }),
 
 		// --- Execution : PowerShell ---
 		new MappingRule(new[] { "PowerShell" }, new[] { T1059_001 }),
@@ -108,7 +113,9 @@ public static class MitreMapper
 		new MappingRule(new[] { "Scheduled Task", "schtasks" }, new[] { T1053_005 }),
 
 		// --- Persistence : services Windows ---
-		new MappingRule(new[] { "Service" }, new[] { T1543_003 }),
+		// Correctif N1: mapping T1543.003 basé sur « Service » RETIRÉ. Le mot-clé « Service »
+		// était bien trop générique (Print Spooler, Remote Registry, etc.) et aucun collecteur
+		// ne détecte réellement la création de service malveillant → 19 faux positifs au re-audit.
 
 		// --- Lateral Movement : RDP ---
 		new MappingRule(new[] { "RDP", "Bureau à distance" }, new[] { T1021_001 }),
@@ -117,10 +124,14 @@ public static class MitreMapper
 		new MappingRule(new[] { "WinRM", "PowerShell Remoting" }, new[] { T1021_006 }),
 
 		// --- Credential Access : Wi-Fi ouvert (contexte AiTM) ---
-		new MappingRule(new[] { "WiFi", "open" }, new[] { T1557 }),
+		// Correctif N1: « open » (sous-chaîne trop générique) retiré au profit de motifs explicites
+		// correspondant au check WiFi réel.
+		new MappingRule(new[] { "WiFi", "réseau ouvert", "Réseaux ouverts", "open network" }, new[] { T1557 }),
 
-		// --- Credential Access : Kerberos (types de chiffrement faibles / RC4) ---
-		new MappingRule(new[] { "Kerberos", "encryption types", "RC4" }, new[] { T1558 }),
+		// --- Credential Access : Kerberos (types de chiffrement faibles) ---
+		// Correctif N1: « RC4 » retiré (cipher Schannel, pas du Kerberoasting). On exige désormais
+		// « Kerberos » ET (« encryption type » OU « chiffrement »).
+		new MappingRule(new[] { "Kerberos" }, new[] { T1558 }, new[] { "encryption type", "chiffrement" }),
 
 		// --- Privilege Escalation : pilotes vulnérables (BYOVD) ---
 		new MappingRule(new[] { "Vulnerable Driver", "BYOVD", "Blocklist" }, new[] { T1068 }),
@@ -129,10 +140,12 @@ public static class MitreMapper
 		new MappingRule(new[] { "Test Signing", "testsigning", "Driver Signature" }, new[] { T1553_006 }),
 
 		// --- Persistence : Security Support Provider (LSA / paquets d'authentification) ---
-		new MappingRule(new[] { "Security Package", "Authentication Package", "SSP" }, new[] { T1547_005 }),
+		// Correctif N1: « SSP » seul (trop court) retiré → on exige « Security Support Provider » ou « LSA ».
+		new MappingRule(new[] { "Security Package", "Authentication Package", "Security Support Provider", "LSA" }, new[] { T1547_005 }),
 
 		// --- Privilege Escalation : spouleur d'impression (PrintNightmare) ---
-		new MappingRule(new[] { "Print", "Spooler", "PrintNightmare" }, new[] { T1068 }),
+		// Correctif N1: « Print » seul (trop générique) retiré → on exige « Spooler » ou « PrintNightmare ».
+		new MappingRule(new[] { "Spooler", "PrintNightmare" }, new[] { T1068 }),
 
 		// --- Lateral Movement / Initial Access : médias amovibles ---
 		new MappingRule(new[] { "AutoRun", "AutoPlay", "USB", "Removable" }, new[] { T1091 }),
@@ -160,6 +173,13 @@ public static class MitreMapper
 		{
 			bool ruleMatches = rule.Keywords.Any(k =>
 				haystack.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+
+			// Condition ET optionnelle : au moins un motif de RequireAlso doit aussi être présent.
+			if (ruleMatches && rule.RequireAlso != null)
+			{
+				ruleMatches = rule.RequireAlso.Any(k =>
+					haystack.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+			}
 
 			if (!ruleMatches)
 			{

@@ -183,6 +183,27 @@ public class AdditionalSecurityCollector : ISecurityCollector
 				Reference = "https://devblogs.microsoft.com/powershell/windows-powershell-2-0-deprecation/"
 			};
 		});
+		// R7/M3 : couverture Constrained Language Mode (CLM), en compensation du retrait du PowerShellCollector.
+		// On lit le REGISTRE (et NON la variable d'environnement du process, qui donnerait un faux négatif) :
+		// __PSLockdownPolicy peut être stocké en REG_SZ ou REG_DWORD ; RegString renvoie sa représentation
+		// texte dans les deux cas. Valeur « 4 » = ConstrainedLanguage forcé au niveau système.
+		ct.ThrowIfCancellationRequested();
+		TryAdd(results, delegate
+		{
+			string lockdownPolicy = RegString("HKLM", "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment", "__PSLockdownPolicy");
+			bool clmForced = string.Equals(lockdownPolicy?.Trim(), "4", StringComparison.OrdinalIgnoreCase);
+			return new SecurityResult
+			{
+				Category = Category,
+				CheckName = "PowerShell: Constrained Language Mode",
+				CurrentValue = $"__PSLockdownPolicy={lockdownPolicy ?? "Non défini"}",
+				ExpectedValue = "4 (ConstrainedLanguage forcé globalement)",
+				Status = (clmForced ? SecurityStatus.OK : SecurityStatus.Info),
+				Description = "Le mode de langage restreint (Constrained Language Mode) limite l'accès aux API sensibles (COM, .NET, appels Win32) depuis PowerShell, réduisant fortement la surface d'attaque des scripts malveillants. Il est le plus souvent appliqué via WDAC/AppLocker ; la valeur registre __PSLockdownPolicy=4 le force au niveau système.",
+				Recommendation = (clmForced ? "CLM forcé globalement (__PSLockdownPolicy=4)." : "Langage complet (CLM non forcé globalement — généralement appliqué via WDAC/AppLocker, voir Application Control)."),
+				Reference = "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_language_modes"
+			};
+		});
 	}
 
 	private void CollectCredentialSecurity(List<SecurityResult> results, CancellationToken ct)
@@ -648,26 +669,12 @@ public class AdditionalSecurityCollector : ISecurityCollector
 
 	private void CollectHardwareSecurityAdditional(List<SecurityResult> results, CancellationToken ct)
 	{
-		ct.ThrowIfCancellationRequested();
-		TryAdd(results, delegate
-		{
-			bool windowsLaps = RegInt("HKLM", "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\LAPS\\Config", "BackupDirectory", -999) != -999;
-			RegString("HKLM", "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\LAPS\\Config", "ADPasswordEncryptionEnabled");
-			RegInt("HKLM", "SOFTWARE\\Policies\\Microsoft Services\\AdmPwd", "AdmPwdEnabled", -999);
-			bool legacyLaps = RegInt("HKLM", "SOFTWARE\\Policies\\Microsoft Services\\AdmPwd", "AdmPwdEnabled") == 1;
-			bool lapsConfigured = windowsLaps || legacyLaps;
-			return new SecurityResult
-			{
-				Category = Category,
-				CheckName = "LAPS (Local Administrator Password Solution)",
-				CurrentValue = $"Windows LAPS (v2)={windowsLaps}, Legacy LAPS GPO={legacyLaps}",
-				ExpectedValue = "Au moins une version de LAPS configurée",
-				Status = ((!lapsConfigured) ? SecurityStatus.Warning : SecurityStatus.OK),
-				Description = "LAPS (Local Administrator Password Solution) gère automatiquement les mots de passe du compte administrateur local, en générant des mots de passe uniques et aléatoires pour chaque machine. Sans LAPS, le même mot de passe administrateur local sur plusieurs machines permet le mouvement latéral ('Pass-the-Hash' sur comptes locaux).",
-				Recommendation = (lapsConfigured ? "LAPS est configuré — bonne protection contre le mouvement latéral via les comptes locaux." : "Déployer LAPS : Windows LAPS est intégré dans Windows 11 22H2+ et Windows Server 2022. Pour les versions antérieures, télécharger Microsoft LAPS depuis le Microsoft Download Center et configurer via GPO."),
-				Reference = "https://docs.microsoft.com/windows-server/identity/laps/laps-overview"
-			};
-		});
+		// R2 : le check LAPS a été retiré d'ici. Il lisait un chemin erroné
+		// (SOFTWARE\Microsoft\Windows\CurrentVersion\LAPS\Config) qui n'est PAS
+		// l'emplacement réel de la configuration LAPS (GPO/MDM), d'où un faux Warning « =False ».
+		// La couverture LAPS est intégralement déléguée :
+		//   - Windows LAPS (natif) → WindowsLapsCollector (lit le bon chemin Policies\LAPS) ;
+		//   - LAPS legacy (AdmPwd) → LapsCollector.
 		ct.ThrowIfCancellationRequested();
 		TryAdd(results, delegate
 		{
