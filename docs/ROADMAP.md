@@ -88,22 +88,30 @@ Légende : ✅ **livré** · 🚧 **en cours (vague 1)** · 📋 **planifié (va
 
 ---
 
-## D. Vague 3 — backlog priorisé (post bug-review)
+## D. Vague 4 — livré ✅
+
+| Item | Collecteur / fix |
+|---|---|
+| Signatures Authenticode + ghost binaries (A5) | `PersistenceSignatureCollector` |
+| WDAC base/supplemental Audit·Enforce (B) | `WdacDetailCollector` (CiTool + fallback) |
+| ACL Tasks + chemins utilisateur (B) | `ScheduledTaskAclCollector` |
+| Fiabilisation bug-review | N5 DoHPolicy=1, N3-bis skip, H2-bis ZIP/dossier, timeouts 120/180, ACL composites, CiTool deadlock, etc. |
+
+## E. Vague 3 — backlog restant
 
 | Item | Notes |
 |---|---|
-| Historique check-à-check / hash JSON (M7) | Permettre un vrai diff entre deux scans |
-| CEF + Error / échecs modules (L2) | Compléter l’export SIEM |
+| Historique check-à-check / hash JSON (M7) | Vrai diff entre deux scans |
+| CEF + Error / échecs modules (L2) | Export SIEM complet |
 | WSL / conteneurs / nested virt (A9) | Collecteur optionnel poste dev |
-| Signatures Authenticode des persistances (A5) | Lots + perf |
-| EPA / tunnels IPv6 / RPC RestrictRemoteClients (A10) | Relay / spoofing |
-| WDAC base vs supplemental / Audit·Enforce (B) | Au-delà d’AppControl actuel |
-| PSRemoting endpoints, Office COM Add-ins, Tasks ACL | Compléments A3 / B |
+| EPA / tunnels IPv6 détaillés / RPC RestrictRemoteClients (A10) | Relay / spoofing (IPv6 partiel déjà dans NetworkSec) |
+| PSRemoting endpoints, Office COM Add-ins | Compléments A3 / B |
+| Approfondir Tasks (profondeur > 1) + timeout Signatures/WDAC | Fiabilisation post Vague 4 |
 
-> **CisFallback (M6)** : clé registre absente = `Warning` — **choix de conception** (policy non déployée = écart). Ne pas « corriger » en Info.
+> **CisFallback (M6)** : clé registre absente = `Warning` — **choix de conception** (policy non déployée = écart).
 
-> **Correctifs bug-review** : H1–H5, M1/M2/M4/M5/M8/M9, R1–R8, N1–N3, H2 toolkit externe — traités (voir `BUG_REVIEW.md`).
+> Détail bugs ouverts : voir [`BUG_REVIEW.md`](../BUG_REVIEW.md) — notamment **H-AUDIT** (lookup GUID vs nom auditpol).
 
 ---
 
-> Roadmap issue d'une revue croisée multi-IA de la [liste des 664 contrôles](CHECKS.md). Contributions bienvenues via [Issues](https://github.com/ayinedjimi/CHECKSEC/issues) / [Discussions](https://github.com/ayinedjimi/CHECKSEC/discussions).
+> Roadmap issue d'une revue croisée multi-IA de la [liste des 664 contrôles](CHECKS.md). Contributions bienvenues via [Issues](https://github.com/ayinedjimi/WinCheckSec/issues) / [Discussions](https://github.com/ayinedjimi/WinCheckSec/discussions).

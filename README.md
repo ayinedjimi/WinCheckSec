@@ -62,7 +62,7 @@
 ## 🚀 Installation
 
 ### Option 1 — Exécutable portable (recommandé)
-1. Téléchargez `CHECKSEC.exe` depuis la [**dernière release**](https://github.com/ayinedjimi/CHECKSEC/releases/latest).
+1. Téléchargez `CHECKSEC.exe` depuis la [**dernière release**](https://github.com/ayinedjimi/WinCheckSec/releases/latest).
 2. Double‑cliquez. Acceptez l'invite **UAC** (l'analyse nécessite des privilèges administrateur).
 3. Cliquez sur **Lancer l'analyse**.
 
@@ -107,8 +107,8 @@ Autres formats : **PDF** (QuestPDF), **Excel** (ClosedXML), **HTML**, **CEF** (S
 
 ```powershell
 # Prérequis : SDK .NET 9, sous Windows (le compilateur XAML WinUI est Windows-only)
-git clone https://github.com/ayinedjimi/CHECKSEC.git
-cd CHECKSEC
+git clone https://github.com/ayinedjimi/WinCheckSec.git
+cd WinCheckSec
 dotnet build CHECKSEC.sln -c Release -p:Platform=x64
 
 # Exe portable single-file
@@ -147,5 +147,5 @@ Développé par **Ayi NEDJIMI** — [**Ayi NEDJIMI Consultants**](https://ayined
 Distribué sous licence **MIT** — voir [`LICENSE`](LICENSE).
 
 <div align="center">
-<sub>⭐ Si CHECKSEC vous est utile, laissez une étoile et rejoignez les <a href="https://github.com/ayinedjimi/CHECKSEC/discussions">Discussions</a> !</sub>
+<sub>⭐ Si CHECKSEC vous est utile, laissez une étoile et rejoignez les <a href="https://github.com/ayinedjimi/WinCheckSec/discussions">Discussions</a> !</sub>
 </div>
