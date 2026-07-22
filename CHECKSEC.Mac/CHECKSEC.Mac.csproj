@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    CHECKSEC pour macOS — CLI d'audit de posture de securite (Sonoma 14 / Tahoe 26).
+    Multiplateforme : compile sur Windows/Linux/macOS, mais les collecteurs
+    n'executent des resultats reels que sur macOS (ils appellent spctl, fdesetup, etc.).
+    Cible : Apple Silicon (osx-arm64) ET Intel (osx-x64).
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Checksec.Mac</RootNamespace>
+    <AssemblyName>checksec</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>13.0</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RuntimeIdentifiers>osx-arm64;osx-x64</RuntimeIdentifiers>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+</Project>
