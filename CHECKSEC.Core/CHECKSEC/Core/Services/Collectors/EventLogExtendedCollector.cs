@@ -245,7 +245,7 @@ public class EventLogExtendedCollector : ISecurityCollector
 				break;
 			}
 		}
-		StringBuilder scriptDescriptionBuilder = FormatEventSection(suspiciousScripts, scriptBlockError, "PowerShell — Blocs de Script Suspects (EventID 4104, 30 jours)", 20, $"[INFO] {scriptBlockEvents.Count} événement(s) 4104 total | {suspiciousScripts.Count} script(s) suspect(s) filtré(s) (longueur > 350 ou mots-clés dangereux)");
+		StringBuilder scriptDescriptionBuilder = FormatEventSection(suspiciousScripts, scriptBlockError, "PowerShell — Blocs de Script Suspects (EventID 4104, 30 jours)", 20, $"[INFO] {scriptBlockEvents.Count} événement(s) 4104 total | {suspiciousScripts.Count} script(s) suspect(s) filtré(s) (scripts contenant des mots-clés suspects)");
 		results.Add(new SecurityResult
 		{
 			Category = Category,

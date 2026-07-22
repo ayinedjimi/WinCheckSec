@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using CHECKSEC.Core.Models;
@@ -113,6 +114,13 @@ public class SarifExportService
 				// (nom de catégorie / collecteur) plutôt qu'une location physique.
 				string logicalName = string.IsNullOrWhiteSpace(finding.Category) ? "CHECKSEC" : finding.Category;
 
+				// N2 : empreinte partielle stable (SHA-256 court) calculée sur ruleId + "|" + category,
+				// SANS valeur volatile, pour réduire le bruit CI entre deux runs.
+				Dictionary<string, string> partialFingerprints = new Dictionary<string, string>
+				{
+					["checksec/v1"] = ShortFingerprint(ruleId + "|" + (finding.Category ?? string.Empty))
+				};
+
 				results.Add(new
 				{
 					ruleId,
@@ -128,12 +136,98 @@ public class SarifExportService
 							}
 						}
 					},
+					partialFingerprints,
 					properties = new
 					{
 						category = finding.Category ?? string.Empty,
 						currentValue = finding.CurrentValue ?? string.Empty,
 						expectedValue = finding.ExpectedValue ?? string.Empty,
 						status = finding.Status.ToString()
+					}
+				});
+			}
+
+			// N2 : écarts MSCT non conformes (ComplianceGap.IsCompliant == false) ajoutés comme
+			// résultats SARIF supplémentaires. Namespace de ruleId distinct (préfixe « msct- »)
+			// pour ne pas doubler avec les résultats de collecteurs.
+			List<ComplianceGap> gaps = (analysis.Gaps ?? Enumerable.Empty<ComplianceGap>())
+				.Where(g => g != null && !g.IsCompliant)
+				.ToList();
+
+			// Une règle par PolicyName distinct (slug msct- stable, dédupliqué).
+			HashSet<string> usedGapRuleIds = new HashSet<string>(StringComparer.Ordinal);
+			Dictionary<string, string> policyNameToRuleId = new Dictionary<string, string>(StringComparer.Ordinal);
+			foreach (ComplianceGap gap in gaps)
+			{
+				string policyName = gap.PolicyName ?? string.Empty;
+				if (policyNameToRuleId.ContainsKey(policyName))
+				{
+					continue;
+				}
+
+				// Slug stable basé sur PolicyName/ValueName, préfixé « msct- ».
+				string slugSource = string.IsNullOrWhiteSpace(policyName) ? (gap.ValueName ?? string.Empty) : policyName;
+				string gapRuleId = "msct-" + MakeStableSlug(slugSource, usedGapRuleIds);
+				policyNameToRuleId[policyName] = gapRuleId;
+
+				rules.Add(new
+				{
+					id = gapRuleId,
+					name = string.IsNullOrEmpty(policyName) ? gapRuleId : policyName,
+					shortDescription = new { text = string.IsNullOrEmpty(policyName) ? gapRuleId : policyName },
+					properties = new { category = "MSCT" }
+				});
+			}
+
+			// Résultats SARIF pour chaque écart non conforme.
+			foreach (ComplianceGap gap in gaps)
+			{
+				string policyName = gap.PolicyName ?? string.Empty;
+				string gapRuleId = policyNameToRuleId.TryGetValue(policyName, out string? mappedGapId)
+					? mappedGapId
+					: "msct-" + MakeStableSlug(string.IsNullOrWhiteSpace(policyName) ? (gap.ValueName ?? string.Empty) : policyName, usedGapRuleIds);
+
+				// Mappage GapSeverity -> niveau SARIF.
+				string gapLevel = gap.Severity switch
+				{
+					GapSeverity.Critical => "error",
+					GapSeverity.High => "error",
+					GapSeverity.Medium => "warning",
+					GapSeverity.Low => "note",
+					_ => "note"
+				};
+
+				string gapMessage = policyName + " : attendu=" + (gap.BaselineValue ?? string.Empty)
+					+ ", actuel=" + (gap.CurrentValue ?? string.Empty);
+
+				// N2 : empreinte partielle stable calculée sur ruleId + "|" + valueName (sans valeur volatile).
+				Dictionary<string, string> gapFingerprints = new Dictionary<string, string>
+				{
+					["checksec/v1"] = ShortFingerprint(gapRuleId + "|" + (gap.ValueName ?? string.Empty))
+				};
+
+				results.Add(new
+				{
+					ruleId = gapRuleId,
+					level = gapLevel,
+					message = new { text = gapMessage },
+					locations = new[]
+					{
+						new
+						{
+							logicalLocations = new[]
+							{
+								new { name = "MSCT", kind = "namespace" }
+							}
+						}
+					},
+					partialFingerprints = gapFingerprints,
+					properties = new
+					{
+						baselineValue = gap.BaselineValue ?? string.Empty,
+						currentValue = gap.CurrentValue ?? string.Empty,
+						severity = gap.Severity.ToString(),
+						gpoName = gap.GpoName ?? string.Empty
 					}
 				});
 			}
@@ -187,6 +281,27 @@ public class SarifExportService
 			ErrorLogger.Log(LogLevel.Error, "[SarifExport] " + ex.Message, ex);
 			// Repli : un document SARIF vide mais valide.
 			return "{\n  \"$schema\": \"https://json.schemastore.org/sarif-2.1.0.json\",\n  \"version\": \"2.1.0\",\n  \"runs\": [\n    {\n      \"tool\": { \"driver\": { \"name\": \"CHECKSEC\", \"version\": \"6.3.0\", \"informationUri\": \"https://github.com/ayinedjimi/CHECKSEC\", \"rules\": [] } },\n      \"results\": []\n    }\n  ]\n}";
+		}
+	}
+
+	// N2 : empreinte SHA-256 courte (16 caractères hex) stable, calculée sur une clé non volatile.
+	// Sert de partialFingerprints pour réduire le bruit en CI entre deux runs. Ne lève jamais.
+	private static string ShortFingerprint(string key)
+	{
+		try
+		{
+			byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(key ?? string.Empty));
+			StringBuilder hex = new StringBuilder(16);
+			// On ne garde que les 8 premiers octets -> 16 caractères hexadécimaux.
+			for (int i = 0; i < 8 && i < hash.Length; i++)
+			{
+				hex.Append(hash[i].ToString("x2"));
+			}
+			return hex.ToString();
+		}
+		catch
+		{
+			return "0000000000000000";
 		}
 	}
 

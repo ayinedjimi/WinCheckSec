@@ -125,6 +125,39 @@ public class DnsOverHttpsCollector : ISecurityCollector
 					Reference = ""
 				});
 			}
+			// R4 : réintégration du contrôle DoHPolicy (politique GPO machine), souvent le vrai levier
+			// de déploiement. Ne duplique pas EnableAutoDoh (paramètre du service Dnscache) : DoHPolicy
+			// est une stratégie sous Policies\Microsoft\Windows NT\DNSClient.
+			// DWORD : 0/absent = non configuré, 2 = autorisé, 3 = requis/obligatoire.
+			ct.ThrowIfCancellationRequested();
+			using (RegistryKey dnsClientPolicyKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient"))
+			{
+				object doHPolicyValue = dnsClientPolicyKey?.GetValue("DoHPolicy");
+				int doHPolicy = (doHPolicyValue != null) ? Convert.ToInt32(doHPolicyValue) : 0;
+				string doHPolicyText = doHPolicy switch
+				{
+					2 => "Autorisé (DoH autorisé mais non imposé)",
+					3 => "Requis (DoH obligatoire)",
+					_ => "Non configuré",
+				};
+				SecurityStatus doHPolicyStatus = doHPolicy switch
+				{
+					3 => SecurityStatus.OK,
+					2 => SecurityStatus.Info,
+					_ => SecurityStatus.Info,
+				};
+				results.Add(new SecurityResult
+				{
+					Category = Category,
+					CheckName = "DNS-over-HTTPS — Politique GPO (DoHPolicy)",
+					CurrentValue = doHPolicyText,
+					ExpectedValue = "Requis (3)",
+					Status = doHPolicyStatus,
+					Description = "État de la politique GPO machine DoHPolicy: " + doHPolicyText + ". Cette stratégie (Policies\\Microsoft\\Windows NT\\DNSClient) impose le comportement DoH sur l'ensemble du poste.",
+					Recommendation = ((doHPolicy == 3) ? "Configuration optimale : DoH imposé par GPO." : ((doHPolicy == 2) ? "DoH autorisé par GPO mais non obligatoire. Définissez DoHPolicy = 3 pour rendre DoH requis." : "DoH non imposé par GPO. Définissez DoHPolicy = 3 (requis) pour forcer le chiffrement des requêtes DNS via GPO.")),
+					Reference = "https://learn.microsoft.com/en-us/windows-server/networking/dns/doh-client-support"
+				});
+			}
 		}
 		catch (OperationCanceledException)
 		{

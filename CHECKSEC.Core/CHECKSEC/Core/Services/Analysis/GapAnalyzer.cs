@@ -48,17 +48,25 @@ public class GapAnalyzer
 		foreach (BaselinePolicy policy in policies)
 		{
 			ct.ThrowIfCancellationRequested();
+			// Correctif R3/M10: les droits utilisateur (UserRightsAssignment) sont audites de
+			// maniere unique par le collecteur « Droits utilisateur » (categorie « Comptes », via
+			// secedit). On ne genere PLUS AUCUN ecart MSCT pour ces policies — ni conforme (qui
+			// gonflait faussement le taux de conformite), ni non conforme (qui aurait pollue la
+			// liste). On saute donc simplement la policy pour preserver la verite unique.
+			if (policy.Type == PolicyType.UserRightsAssignment)
+			{
+				continue;
+			}
 			try
 			{
 				ComplianceGap complianceGap = policy.Type switch
 				{
-					PolicyType.Registry => AnalyzeRegistryPolicy(policy), 
-					PolicyType.AuditPolicy => AnalyzeAuditPolicy(policy), 
-					PolicyType.PasswordPolicy => AnalyzePasswordPolicy(policy), 
-					PolicyType.AccountLockout => AnalyzeAccountLockoutPolicy(policy), 
-					PolicyType.SecurityOption => AnalyzeSecurityOption(policy), 
-					PolicyType.UserRightsAssignment => AnalyzeUserRights(policy), 
-					_ => AnalyzeRegistryPolicy(policy), 
+					PolicyType.Registry => AnalyzeRegistryPolicy(policy),
+					PolicyType.AuditPolicy => AnalyzeAuditPolicy(policy),
+					PolicyType.PasswordPolicy => AnalyzePasswordPolicy(policy),
+					PolicyType.AccountLockout => AnalyzeAccountLockoutPolicy(policy),
+					PolicyType.SecurityOption => AnalyzeSecurityOption(policy),
+					_ => AnalyzeRegistryPolicy(policy),
 				};
 				if (complianceGap != null)
 				{
@@ -596,26 +604,42 @@ public class GapAnalyzer
 
 	private ComplianceGap AnalyzeSecurityOption(BaselinePolicy policy)
 	{
-		string currentValue = "(vérification manuelle requise)";
-		// Correctif H5: non vérifiable = non conforme par défaut (à vérifier manuellement).
-		// isCompliant ne passe à true qu'après une comparaison registre réussie.
-		bool isCompliant = false;
-		if (policy.KeyPath.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase) || policy.KeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase))
+		// Correctif N3: options « System Access » hors registre (KeyPath non HKLM/HKCU, ex.
+		// LSAAnonymousNameLookup, AllowAdministratorLockout) — non verifiables via le registre.
+		// On ne les compte PLUS comme non-conformites non prouvees (ce qui polluait le taux de
+		// conformite MSCT). Elles deviennent un NON-ecart (IsCompliant = true) de severite Low,
+		// avec une mention explicite de verification manuelle.
+		if (!(policy.KeyPath.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase) || policy.KeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase)))
 		{
-			(RegistryHive hive, string subKey) splitPath = SplitRegistryPath(policy.KeyPath);
-			RegistryHive hive = splitPath.hive;
-			string subKey = splitPath.subKey;
-			object rawValue = ReadRegistryValue(hive, subKey, policy.ValueName);
-			if (rawValue != null)
+			return new ComplianceGap
 			{
-				currentValue = FormatRegistryValue(rawValue, policy.ValueType);
-				isCompliant = CompareValues(currentValue, policy.ExpectedValue, policy.ValueType);
-			}
-			else
-			{
-				currentValue = "(non défini)";
-				isCompliant = string.IsNullOrEmpty(policy.ExpectedValue);
-			}
+				PolicyName = "Security Option: " + policy.ValueName,
+				RegistryPath = policy.KeyPath,
+				ValueName = policy.ValueName,
+				BaselineValue = policy.ExpectedValue,
+				CurrentValue = "(vérification manuelle requise)",
+				IsCompliant = true,
+				Severity = GapSeverity.Low,
+				GpoName = policy.GpoName,
+				Description = "Option de sécurité non vérifiable automatiquement via registre — à contrôler manuellement (secedit/GPO)."
+			};
+		}
+		// Branche registre (HKLM/HKCU): evaluation normale conservee.
+		string currentValue = "(vérification manuelle requise)";
+		bool isCompliant = false;
+		(RegistryHive hive, string subKey) splitPath = SplitRegistryPath(policy.KeyPath);
+		RegistryHive hive = splitPath.hive;
+		string subKey = splitPath.subKey;
+		object rawValue = ReadRegistryValue(hive, subKey, policy.ValueName);
+		if (rawValue != null)
+		{
+			currentValue = FormatRegistryValue(rawValue, policy.ValueType);
+			isCompliant = CompareValues(currentValue, policy.ExpectedValue, policy.ValueType);
+		}
+		else
+		{
+			currentValue = "(non défini)";
+			isCompliant = string.IsNullOrEmpty(policy.ExpectedValue);
 		}
 		return new ComplianceGap
 		{
@@ -631,21 +655,9 @@ public class GapAnalyzer
 		};
 	}
 
-	private ComplianceGap AnalyzeUserRights(BaselinePolicy policy)
-	{
-		return new ComplianceGap
-		{
-			PolicyName = "User Rights: " + policy.ValueName,
-			RegistryPath = "Privilege Rights",
-			ValueName = policy.ValueName,
-			BaselineValue = policy.ExpectedValue,
-			CurrentValue = "Évalué par le collecteur « Droits utilisateur » (secedit)",
-			IsCompliant = true,
-			Severity = GapSeverity.Low,
-			GpoName = policy.GpoName,
-			Description = "H4 : le droit utilisateur '" + policy.ValueName + "' est audité directement par le collecteur « Droits utilisateur » (via secedit). Non recompté ici comme écart pour éviter la double vérité et la pollution de la liste MSCT."
-		};
-	}
+	// Correctif R3/M10: methode AnalyzeUserRights supprimee. Les droits utilisateur sont
+	// desormais entierement sautes dans Analyze (aucun ecart MSCT genere) — la verite unique
+	// reste le collecteur « Droits utilisateur » (secedit).
 
 	private static GapSeverity DetermineSeverity(BaselinePolicy policy)
 	{
