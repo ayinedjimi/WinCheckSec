@@ -22,20 +22,31 @@ public class FileSystemAclCollector : ISecurityCollector
 	private static readonly SecurityIdentifier EveryoneSid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);             // S-1-1-0
 	private static readonly SecurityIdentifier AuthenticatedUsersSid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null); // S-1-5-11
 
-	// Droits d'écriture sur système de fichiers considérés comme dangereux pour un principal non privilégié.
+	// Droits d'ÉCRITURE réels dangereux pour un principal non privilégié.
+	// IMPORTANT (bug review) : ne PAS inclure Modify/FullControl (valeurs composites contenant
+	// les bits de lecture/exécution → collapse sur FullControl → faux Critical sur tout droit de
+	// lecture, ex. ReadAndExecute accordé par défaut à Users sur System32/Program Files).
+	// WriteData/AppendData = une vraie anomalie sur System32/Program Files (le défaut n'accorde
+	// PAS l'écriture à Users). On exclut WriteAttributes/WriteExtendedAttributes (bénins, parfois
+	// accordés par défaut) pour éviter de faux positifs.
 	private const FileSystemRights DangerousFileRights =
-		FileSystemRights.WriteData |        // = CreateFiles
-		FileSystemRights.AppendData |       // = CreateDirectories
-		FileSystemRights.Write |
-		FileSystemRights.Modify |
-		FileSystemRights.FullControl;
+		FileSystemRights.WriteData |                        // = CreateFiles
+		FileSystemRights.AppendData |                       // = CreateDirectories
+		FileSystemRights.Delete |
+		FileSystemRights.DeleteSubdirectoriesAndFiles |
+		FileSystemRights.ChangePermissions |
+		FileSystemRights.TakeOwnership;
 
 	// Droits d'écriture sur clé de registre considérés comme dangereux.
+	// Droits registre d'ÉCRITURE réels. Exclure WriteKey et FullControl (composites partageant
+	// des bits avec ReadKey/StandardRightsRead → sinon faux Critical sur toute ACE de lecture,
+	// ex. ReadKey accordé par défaut à Users sur les clés Run).
 	private const RegistryRights DangerousRegistryRights =
 		RegistryRights.SetValue |
 		RegistryRights.CreateSubKey |
-		RegistryRights.WriteKey |
-		RegistryRights.FullControl;
+		RegistryRights.Delete |
+		RegistryRights.ChangePermissions |
+		RegistryRights.TakeOwnership;
 
 	public string Name => "ACL Système de fichiers & Registre";
 

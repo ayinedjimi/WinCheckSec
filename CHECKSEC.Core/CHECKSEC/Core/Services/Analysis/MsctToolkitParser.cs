@@ -42,57 +42,85 @@ public class MsctToolkitParser
 			List<BaselinePolicy> externalPolicies = new List<BaselinePolicy>();
 			try
 			{
-				string tempDir = Path.Combine(Path.GetTempPath(), $"CHECKSEC_MSCT_{Guid.NewGuid():N}");
+				// Correctif H2-bis : le parse externe accepte DEUX cas.
+				//  1) _toolkitPath = fichier .zip (ou dossier contenant un ZIP baseline) → extraction
+				//     dans un tempDir, puis parse du tempDir (comportement H2 d'origine).
+				//  2) _toolkitPath = dossier DEJA dezippe (contenant registry.pol / GptTmpl.inf / *.csv)
+				//     → parse DIRECT du dossier, SANS extraction ni tempDir.
+				string tempDir = null;   // dossier temporaire d'extraction (cas ZIP uniquement)
+				string parseDir = null;  // dossier finalement parse (tempDir extrait OU dossier direct)
 				try
 				{
-					Directory.CreateDirectory(tempDir);
-					bool extracted = false;
-					string zipPath = FindBaselineZip();
+					string zipPath = null;
+					if (Directory.Exists(_toolkitPath))
+					{
+						// Dossier : on cherche d'abord un ZIP baseline a extraire ; a defaut, on
+						// considere le dossier comme deja dezippe et on le parse directement.
+						zipPath = FindBaselineZip();
+						if (zipPath == null)
+						{
+							parseDir = _toolkitPath;
+						}
+					}
+					else if (File.Exists(_toolkitPath) && string.Equals(Path.GetExtension(_toolkitPath), ".zip", StringComparison.OrdinalIgnoreCase))
+					{
+						// Fichier .zip pointe directement.
+						zipPath = _toolkitPath;
+					}
+
 					if (zipPath != null)
 					{
+						tempDir = Path.Combine(Path.GetTempPath(), $"CHECKSEC_MSCT_{Guid.NewGuid():N}");
+						Directory.CreateDirectory(tempDir);
 						await Task.Run(delegate
 						{
 							ZipFile.ExtractToDirectory(zipPath, tempDir, overwriteFiles: true);
 						}, ct);
-						extracted = true;
+						parseDir = tempDir;
 					}
-					if (extracted)
+
+					if (parseDir != null)
 					{
 						ct.ThrowIfCancellationRequested();
+						string dir = parseDir;
 						await Task.Run(delegate
 						{
-							BuildGpoNameMap(tempDir);
+							BuildGpoNameMap(dir);
 						}, ct);
 						ct.ThrowIfCancellationRequested();
 						await Task.Run(delegate
 						{
-							ParseAllRegistryPol(tempDir, externalPolicies, ct);
+							ParseAllRegistryPol(dir, externalPolicies, ct);
 						}, ct);
 						ct.ThrowIfCancellationRequested();
 						await Task.Run(delegate
 						{
-							ParseAllGptTmpl(tempDir, externalPolicies, ct);
+							ParseAllGptTmpl(dir, externalPolicies, ct);
 						}, ct);
 						ct.ThrowIfCancellationRequested();
 						await Task.Run(delegate
 						{
-							ParseAllAuditCsv(tempDir, externalPolicies, ct);
+							ParseAllAuditCsv(dir, externalPolicies, ct);
 						}, ct);
 					}
 					else
 					{
-						ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Toolkit externe present mais aucune baseline (ZIP) trouvee — repli sur baseline embarquee.");
+						ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Toolkit externe present mais aucune baseline (ZIP ou dossier dezippe) trouvee — repli sur baseline embarquee.");
 					}
 				}
 				finally
 				{
-					try
+					// Nettoyage du tempDir UNIQUEMENT dans le cas ZIP (jamais le dossier fourni par l'utilisateur).
+					if (tempDir != null)
 					{
-						Directory.Delete(tempDir, recursive: true);
-					}
-					catch (Exception ex3)
-					{
-						ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Cleanup temp directory failed: " + ex3.Message, ex3);
+						try
+						{
+							Directory.Delete(tempDir, recursive: true);
+						}
+						catch (Exception ex3)
+						{
+							ErrorLogger.Log(LogLevel.Warning, "[MsctToolkitParser] Cleanup temp directory failed: " + ex3.Message, ex3);
+						}
 					}
 				}
 				// Succes: le toolkit externe a produit au moins une policy → on le retourne en priorite.
@@ -579,14 +607,26 @@ public class MsctToolkitParser
 
 	private static BaselinePolicy? ParseRegistryValueEntry(string line, string gpoName)
 	{
-		string[] parts = line.Split(',');
-		if (parts.Length < 3)
+		// Format reel d'une ligne [Registry Values] : MACHINE\Chemin\NomValeur=Type,Donnee
+		// Le '=' separe le chemin+valeur du couple type,donnee ; UNE virgule separe type et donnee.
+		// 1) Decoupe sur le PREMIER '='
+		int equalsIndex = line.IndexOf('=');
+		if (equalsIndex < 0)
 		{
 			return null;
 		}
-		string fullPath = parts[0].Trim();
-		string typeCode = parts[1].Trim();
-		string expectedValue = string.Join(",", parts, 2, parts.Length - 2).Trim().Trim('"');
+		string fullPath = line.Substring(0, equalsIndex).Trim();
+		string right = line.Substring(equalsIndex + 1).Trim();
+		// 2) Separe la partie droite sur la PREMIERE virgule : typeCode + donnee.
+		//    La donnee peut elle-meme contenir des virgules (REG_MULTI_SZ) -> ne pas re-splitter.
+		int commaIndex = right.IndexOf(',');
+		if (commaIndex < 0)
+		{
+			return null;
+		}
+		string typeCode = right.Substring(0, commaIndex).Trim();
+		string expectedValue = right.Substring(commaIndex + 1).Trim().Trim('"');
+		// 3) Extrait valueName = segment apres le dernier '\' de la partie gauche ; keyPath = le reste.
 		int separatorIndex = fullPath.LastIndexOf('\\');
 		if (separatorIndex < 0)
 		{
