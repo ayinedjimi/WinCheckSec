@@ -70,6 +70,23 @@ public static class ProcessRunner
         return new ProcResult(proc.ExitCode, stdout.ToString().Trim(), stderr.ToString().Trim());
     }
 
+    /// <summary>
+    /// Execute un script shell (via <c>/bin/bash -c</c>) — utilise pour evaluer les
+    /// commandes <c>check.shell</c> des regles mSCP (souvent des pipelines multi-lignes).
+    /// </summary>
+    public static Task<ProcResult> RunShellAsync(string script, CancellationToken ct, int timeoutMs = 20000)
+        => RunAsync("/bin/bash", new[] { "-c", script }, ct, timeoutMs);
+
     /// <summary>Vrai si on tourne bien sur macOS (sinon les collecteurs renvoient NotApplicable).</summary>
     public static bool IsMacOs => OperatingSystem.IsMacOS();
+
+    /// <summary>Version majeure de macOS (ex. "26"), via <c>sw_vers</c> ; null hors macOS.</summary>
+    public static async Task<string?> MacOsMajorAsync(CancellationToken ct)
+    {
+        if (!IsMacOs) return null;
+        var res = await RunAsync("/usr/bin/sw_vers", new[] { "-productVersion" }, ct, 5000);
+        var v = res.StdOut.Trim();
+        var dot = v.IndexOf('.');
+        return dot > 0 ? v[..dot] : (v.Length > 0 ? v : null);
+    }
 }
