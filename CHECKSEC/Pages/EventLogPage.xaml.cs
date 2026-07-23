@@ -228,7 +228,7 @@ public sealed partial class EventLogPage : Page
 				page.DefaultTextStyle((TextStyle x) => x.FontSize(9f));
 				page.Header().Column(delegate(ColumnDescriptor col)
 				{
-					col.Item().Text("CHECKSEC — Journaux d'événements").FontSize(18f)
+					col.Item().Text("WinCheckSec — Journaux d'événements").FontSize(18f)
 						.Bold()
 						.FontColor(Colors.Blue.Darken2);
 					col.Item().Text($"{Environment.MachineName} — {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(10f)

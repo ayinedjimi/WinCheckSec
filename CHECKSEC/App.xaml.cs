@@ -101,7 +101,7 @@ public partial class App : Application
 				format = args[j + 1].ToLower();
 			}
 		}
-		Console.WriteLine("CHECKSEC v6.0 — Mode headless");
+		Console.WriteLine("WinCheckSec v6.0 — Mode headless");
 		Console.WriteLine("Analyse de " + Environment.MachineName + "...");
 		await analysis.RunAsync();
 		Console.WriteLine($"Score: {analysis.GlobalScore}% (Grade: {analysis.GlobalGrade})");

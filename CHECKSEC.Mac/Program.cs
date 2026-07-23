@@ -2,8 +2,8 @@ using Checksec.Mac.Collectors;
 using Checksec.Mac.Core;
 using Checksec.Mac.Mscp;
 
-// ─── CHECKSEC for macOS — CLI d'audit de posture de securite ───────────────────
-// Usage : checksec [--json <chemin>] [--quiet] [--baseline <nom>] [--mscp <dir>] [--list-baselines]
+// ─── MacSecCheck — CLI d'audit de posture de securite macOS ────────────────────
+// Usage : macseccheck [--json <chemin>] [--quiet] [--baseline <nom>] [--mscp <dir>] [--list-baselines]
 //   --json <chemin>   : ecrit le rapport JSON forensique (defaut : ~/Desktop ou repertoire courant)
 //   --quiet           : n'affiche pas le tableau, ecrit seulement le JSON
 //   --baseline <nom>  : baseline mSCP a evaluer (defaut : cis_lvl1 ; ex. cis_lvl2, disa_stig, 800-53r5_high)
@@ -69,9 +69,8 @@ var mscpRuleCount = sections.Sum(s => s.Rules.Count);
 
 if (!quiet)
 {
-    Console.WriteLine("╔══════════════════════════════════════════════════╗");
-    Console.WriteLine("║   CHECKSEC for macOS — audit de securite  v0.1.0  ║");
-    Console.WriteLine("╚══════════════════════════════════════════════════╝");
+    Console.WriteLine("MacSecCheck — auditeur de securite macOS  v0.2.0");
+    Console.WriteLine(new string('=', 48));
     Console.WriteLine($"Baseline mSCP : {baseline} (macOS {macMajor}) — " +
                       $"{mscpRuleCount} regles sur {sections.Count} sections, {mscp.RuleCount} regles indexees.");
     if (mscpRuleCount == 0)
@@ -107,7 +106,7 @@ static string? GetOption(string[] args, string name)
 static string DefaultOutputPath()
 {
     var stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-    var file = $"CHECKSEC_{Environment.MachineName}_{stamp}.json";
+    var file = $"MacSecCheck_{Environment.MachineName}_{stamp}.json";
     var desktop = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Desktop");
     var dir = Directory.Exists(desktop) ? desktop : Directory.GetCurrentDirectory();

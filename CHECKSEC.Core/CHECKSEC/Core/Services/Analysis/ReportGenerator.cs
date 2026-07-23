@@ -274,12 +274,12 @@ public class ReportGenerator
 		}
 		await w.WriteLineAsync("".AsMemory(), ct);
 		await w.WriteLineAsync("════════════════════════════════════════════════════════════════════".AsMemory(), ct);
-		await w.WriteLineAsync("  CHECKSEC - RAPPORT D'AUDIT DE SÉCURITÉ WINDOWS 11".AsMemory(), ct);
+		await w.WriteLineAsync("  WinCheckSec - RAPPORT D'AUDIT DE SÉCURITÉ WINDOWS 11".AsMemory(), ct);
 		await w.WriteLineAsync(("  Généré le        : " + now).AsMemory(), ct);
 		await w.WriteLineAsync(("  Machine          : " + Environment.MachineName).AsMemory(), ct);
 		await w.WriteLineAsync(("  Utilisateur      : " + Environment.UserDomainName + "\\" + Environment.UserName).AsMemory(), ct);
 		await w.WriteLineAsync($"  Système          : {Environment.OSVersion}".AsMemory(), ct);
-		await w.WriteLineAsync("  Version outil    : CHECKSEC v1.0.0".AsMemory(), ct);
+		await w.WriteLineAsync("  Version outil    : WinCheckSec v1.0.0".AsMemory(), ct);
 		await w.WriteLineAsync("  Baseline         : Windows 11 Security Baseline (MSCT)".AsMemory(), ct);
 		await w.WriteLineAsync("════════════════════════════════════════════════════════════════════".AsMemory(), ct);
 		await w.WriteLineAsync("".AsMemory(), ct);
@@ -623,7 +623,7 @@ public class ReportGenerator
 		string generated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", FrFr);
 		await w.WriteLineAsync("════════════════════════════════════════════════════════════════════".AsMemory(), ct);
 		await w.WriteLineAsync("  FIN DU RAPPORT D'AUDIT".AsMemory(), ct);
-		await w.WriteLineAsync(("  Généré par CHECKSEC v1.0.0 - " + generated).AsMemory(), ct);
+		await w.WriteLineAsync(("  Généré par WinCheckSec v1.0.0 - " + generated).AsMemory(), ct);
 		await w.WriteLineAsync($"  Machine: {Environment.MachineName} | OS: {Environment.OSVersion}".AsMemory(), ct);
 		await w.WriteLineAsync("".AsMemory(), ct);
 		await w.WriteLineAsync("  Références:".AsMemory(), ct);

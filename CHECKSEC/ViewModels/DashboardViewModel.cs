@@ -347,7 +347,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 	private string BuildTextReport()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.AppendLine("CHECKSEC — RAPPORT D'AUDIT DE SÉCURITÉ");
+		stringBuilder.AppendLine("WinCheckSec — RAPPORT D'AUDIT DE SÉCURITÉ");
 		stringBuilder.AppendLine(new string('=', 72));
 		StringBuilder stringBuilder2 = stringBuilder;
 		StringBuilder stringBuilder3 = stringBuilder2;

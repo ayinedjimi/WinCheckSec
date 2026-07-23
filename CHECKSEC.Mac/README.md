@@ -1,6 +1,6 @@
-# CHECKSEC for macOS
+# MacSecCheck
 
-Portage de [CHECKSEC](../README.md) (auditeur de posture de sécurité) vers **macOS Sonoma 14 / Tahoe 26**.
+Portage macOS de [WinCheckSec](../README.md) (auditeur de posture de sécurité) vers **macOS Sonoma 14 / Tahoe 26**. Binaire : `macseccheck`.
 
 > État : **PoC v0.2** — CLI fonctionnelle, 7 collecteurs natifs + **intégration des baselines mSCP (NIST)**, export JSON forensique signé SHA-256.
 > Le moteur est du C# multiplateforme ; les collecteurs appellent les outils système macOS.
@@ -16,11 +16,11 @@ la valeur attendue, la remédiation et le mapping CIS / NIST 800-53 / DISA.
 - Un **collecteur par section** exécute le `check` de chaque règle et compare la sortie à la valeur attendue → conforme / écart (gravité issue de la sévérité DISA STIG).
 
 ```bash
-./checksec --list-baselines                 # liste les baselines disponibles
-./checksec --baseline cis_lvl2              # évalue une autre baseline
-./checksec --baseline disa_stig             # STIG DISA
-./checksec --dump-rule os_sip_enable        # diagnostic : check/attendu/fix résolus
-./checksec --mscp /chemin/vers/macos_security   # utilise un checkout externe (données à jour)
+./macseccheck --list-baselines                 # liste les baselines disponibles
+./macseccheck --baseline cis_lvl2              # évalue une autre baseline
+./macseccheck --baseline disa_stig             # STIG DISA
+./macseccheck --dump-rule os_sip_enable        # diagnostic : check/attendu/fix résolus
+./macseccheck --mscp /chemin/vers/macos_security   # utilise un checkout externe (données à jour)
 ```
 
 Les données embarquées peuvent être régénérées depuis un checkout mSCP ; voir la note en bas de fichier.
@@ -64,10 +64,10 @@ dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFil
 ## Exécution (sur un Mac)
 
 ```bash
-chmod +x checksec
-./checksec                 # audit + tableau + rapport JSON sur le Bureau
-sudo ./checksec            # recommandé : certains contrôles exigent root (SSH, SIP complet)
-./checksec --json /tmp/rapport.json --quiet
+chmod +x macseccheck
+./macseccheck                 # audit + tableau + rapport JSON sur le Bureau
+sudo ./macseccheck            # recommandé : certains contrôles exigent root (SSH, SIP complet)
+./macseccheck --json /tmp/rapport.json --quiet
 ```
 
 Code retour : `0` si score ≥ 40, `2` sinon (exploitable en CI).

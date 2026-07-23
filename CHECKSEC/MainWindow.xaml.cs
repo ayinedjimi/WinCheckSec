@@ -55,7 +55,7 @@ public sealed partial class MainWindow : Window
 				: "#C50F1F";
 			VersionBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(HexToColor(hex));
 			ToolTipService.SetToolTip(VersionBadge,
-				$"CHECKSEC {BuildInfo.Version} — build {BuildInfo.BuildNumber} ({BuildInfo.BuildTimeUtc} UTC)\n" +
+				$"WinCheckSec {BuildInfo.Version} — build {BuildInfo.BuildNumber} ({BuildInfo.BuildTimeUtc} UTC)\n" +
 				(isAdmin ? "Exécution en tant qu'administrateur ✓" : "⚠ NON élevé — l'analyse sera incomplète"));
 		}
 		catch
@@ -110,7 +110,7 @@ public sealed partial class MainWindow : Window
 			titleBar.ButtonBackgroundColor = Colors.Transparent;
 			titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 		}
-		base.Title = "CHECKSEC — Audit de Sécurité Windows 11";
+		base.Title = "WinCheckSec — Audit de Sécurité Windows 11";
 	}
 
 	private void SetupMicaBackdrop()

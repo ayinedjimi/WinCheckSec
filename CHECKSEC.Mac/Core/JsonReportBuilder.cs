@@ -23,7 +23,7 @@ public static class JsonReportBuilder
         var body = new
         {
             SchemaVersion = "1.0-mac",
-            Product = "CHECKSEC for macOS",
+            Product = "MacSecCheck",
             GeneratedAtUtc = scan.FinishedAt,
             Host = new
             {
