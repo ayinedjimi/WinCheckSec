@@ -16,7 +16,18 @@
     <LangVersion>13.0</LangVersion>
     <InvariantGlobalization>true</InvariantGlobalization>
     <RuntimeIdentifiers>osx-arm64;osx-x64</RuntimeIdentifiers>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="16.2.0" />
+  </ItemGroup>
+
+  <!-- Baselines et regles YAML du NIST macOS Security Compliance Project (mSCP, domaine public),
+       embarquees comme ressources -> binaire autonome, aucune arborescence externe requise. -->
+  <ItemGroup>
+    <EmbeddedResource Include="mscp\rules\**\*.yaml" />
+    <EmbeddedResource Include="mscp\baselines\*.yaml" />
+  </ItemGroup>
 
 </Project>

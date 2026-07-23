@@ -2,8 +2,28 @@
 
 Portage de [CHECKSEC](../README.md) (auditeur de posture de sécurité) vers **macOS Sonoma 14 / Tahoe 26**.
 
-> État : **PoC v0.1** — CLI fonctionnelle, 7 collecteurs réels, export JSON forensique signé SHA-256.
+> État : **PoC v0.2** — CLI fonctionnelle, 7 collecteurs natifs + **intégration des baselines mSCP (NIST)**, export JSON forensique signé SHA-256.
 > Le moteur est du C# multiplateforme ; les collecteurs appellent les outils système macOS.
+
+## Baselines mSCP (NIST macOS Security Compliance Project)
+
+Les règles et baselines YAML du projet [usnistgov/macos_security](https://github.com/usnistgov/macos_security)
+(domaine public) sont **embarquées dans le binaire**. Chaque règle fournit une commande de vérification,
+la valeur attendue, la remédiation et le mapping CIS / NIST 800-53 / DISA.
+
+- **478 règles** indexées, **17 baselines** macOS 26 : `cis_lvl1`, `cis_lvl2`, `disa_stig`, `800-53r5_high/moderate/low`, `cmmc_lvl1/2`, `cnssi-1253_*`, `cisv8`, `800-171`, `hicp_lp`, `nlmapgov_*`, `all_rules`.
+- Exemple : `cis_lvl1` → 98 règles réparties en 5 sections (Auditing, Operating System, Password Policy, System Settings, Supplemental).
+- Un **collecteur par section** exécute le `check` de chaque règle et compare la sortie à la valeur attendue → conforme / écart (gravité issue de la sévérité DISA STIG).
+
+```bash
+./checksec --list-baselines                 # liste les baselines disponibles
+./checksec --baseline cis_lvl2              # évalue une autre baseline
+./checksec --baseline disa_stig             # STIG DISA
+./checksec --dump-rule os_sip_enable        # diagnostic : check/attendu/fix résolus
+./checksec --mscp /chemin/vers/macos_security   # utilise un checkout externe (données à jour)
+```
+
+Les données embarquées peuvent être régénérées depuis un checkout mSCP ; voir la note en bas de fichier.
 
 ## Architecture
 
@@ -54,10 +74,25 @@ Code retour : `0` si score ≥ 40, `2` sinon (exploitable en CI).
 
 ## Feuille de route
 
-1. **Intégration mSCP** — charger les YAML du [NIST macOS Security Compliance Project](https://github.com/usnistgov/macos_security) (CIS/NIST/DISA) pour élargir automatiquement la couverture.
-2. Collecteurs supplémentaires : TCC (permissions vie privée), extensions système/kext, profils de configuration MDM, Lockdown Mode, Secure Boot (Apple Silicon, `bputil`), Time Machine chiffré, comptes/mots de passe (`pwpolicy`).
+1. ~~**Intégration mSCP**~~ — ✅ fait : 478 règles + 17 baselines embarquées, collecteur par section.
+2. Collecteurs natifs supplémentaires : TCC (permissions vie privée), extensions système/kext, profils de configuration MDM, Lockdown Mode, Secure Boot (Apple Silicon, `bputil`), Time Machine chiffré.
 3. Exports PDF/HTML/SARIF (QuestPDF & ClosedXML sont déjà multiplateformes).
 4. UI **Avalonia** partageant 100 % du moteur (rendu proche de l'app Windows).
 5. Packaging `.app` **signé + notarisé**, binaire universel (arm64 + x64).
 
 Voir le plan complet : [`../docs/MACOS_PORT.md`](../docs/MACOS_PORT.md).
+
+---
+
+### Mettre à jour les données mSCP embarquées
+
+Les YAML sont dans `mscp/rules/` et `mscp/baselines/` (embarqués via `<EmbeddedResource>`).
+Pour les régénérer depuis la dernière version du projet NIST :
+
+```bash
+git clone https://github.com/usnistgov/macos_security
+cp -R macos_security/src/mscp/data/rules/*       CHECKSEC.Mac/mscp/rules/
+cp    macos_security/src/mscp/data/baselines/macos/*.yaml CHECKSEC.Mac/mscp/baselines/
+```
+
+Données mSCP sous licence NIST (domaine public / œuvre du gouvernement américain) — voir `mscp/LICENSE_mscp.md`.

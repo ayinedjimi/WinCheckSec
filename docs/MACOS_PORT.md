@@ -52,12 +52,21 @@ Une **CIS Apple macOS 26 Tahoe v1.0.0** existe déjà. → piloter les collecteu
 | Phase | Contenu | État |
 |---|---|---|
 | 0 | PoC CLI + moteur + 7 collecteurs + JSON signé | ✅ **fait** (`CHECKSEC.Mac/`) |
+| 2 | Intégration mSCP (478 règles + 17 baselines embarquées, collecteur par section) | ✅ **fait** |
 | 1 | Extraire un `CHECKSEC.Core` réellement cross-platform (bénéficie aussi à Windows) | à faire |
-| 2 | Intégration mSCP (chargement YAML CIS Tahoe) | à faire |
 | 3 | Collecteurs TCC / extensions / MDM / Secure Boot / pwpolicy | à faire |
 | 4 | Exports PDF/HTML/SARIF | à faire |
 | 5 | UI Avalonia partagée | à faire |
 | 6 | Packaging `.app` signé + notarisé, binaire universel | à faire |
+
+### Détail de l'intégration mSCP (fait)
+
+- Données YAML du [NIST mSCP](https://github.com/usnistgov/macos_security) (domaine public) **embarquées** dans le binaire : `mscp/rules/**` (478 règles) + `mscp/baselines/*.yaml` (17 baselines macOS 26).
+- `Mscp/MscpRule.cs` : parse une règle et **résout `enforcement_info` selon la version** (spécifique `26.0` → niveau macOS canonique → repli), extrait `check.shell`, `result` typé (`integer`/`string`/`boolean`/`float`), `fix.shell`, réf. CIS/NIST/DISA + sévérité STIG.
+- `Mscp/MscpDataLoader.cs` : indexe les règles par `id`, résout une baseline (`profile → sections → rules`) ; source embarquée **ou** checkout externe via `--mscp <dir>`.
+- `Collectors/MscpSectionCollector.cs` : un collecteur par section ; exécute chaque `check` (via `/bin/bash -c`) et compare à l'attendu → conforme (Ok) / écart (gravité = sévérité DISA STIG, sinon Medium) ; règles sans check → « vérification manuelle » (Info).
+- CLI : `--baseline <nom>` (défaut `cis_lvl1`), `--list-baselines`, `--dump-rule <id>`, `--os-version <major>`, `--mscp <dir>`.
+- Vérifié : `cis_lvl1` → 98 règles / 5 sections ; résolution versionnée correcte (Gatekeeper macOS 26 = check JXA `string=true`, macOS 14 = `spctl|grep` `integer=1`).
 
 ## État actuel (v0.1)
 

@@ -1,16 +1,56 @@
 using Checksec.Mac.Collectors;
 using Checksec.Mac.Core;
+using Checksec.Mac.Mscp;
 
 // ─── CHECKSEC for macOS — CLI d'audit de posture de securite ───────────────────
-// Usage : checksec [--json <chemin>] [--quiet]
-//   --json <chemin>  : ecrit le rapport JSON forensique (defaut : ~/Desktop ou repertoire courant)
-//   --quiet          : n'affiche pas le tableau, ecrit seulement le JSON
+// Usage : checksec [--json <chemin>] [--quiet] [--baseline <nom>] [--mscp <dir>] [--list-baselines]
+//   --json <chemin>   : ecrit le rapport JSON forensique (defaut : ~/Desktop ou repertoire courant)
+//   --quiet           : n'affiche pas le tableau, ecrit seulement le JSON
+//   --baseline <nom>  : baseline mSCP a evaluer (defaut : cis_lvl1 ; ex. cis_lvl2, disa_stig, 800-53r5_high)
+//   --mscp <dir>      : utilise un checkout externe du depot mSCP au lieu des donnees embarquees
+//   --list-baselines  : liste les baselines disponibles puis quitte
 
 var jsonPath = GetOption(args, "--json");
 var quiet = args.Contains("--quiet");
+var baseline = GetOption(args, "--baseline") ?? "cis_lvl1";
+var mscpDir = GetOption(args, "--mscp");
 
-// Enregistrement des collecteurs (equivalent BuildCollectors() cote Windows).
-var collectors = new IMacCollector[]
+// Detection de la version majeure de macOS (pour resoudre les regles mSCP versionnees).
+var macMajor = GetOption(args, "--os-version")
+               ?? await ProcessRunner.MacOsMajorAsync(CancellationToken.None)
+               ?? "26";
+
+// Chargement des donnees mSCP (embarquees par defaut, ou depuis --mscp).
+var mscp = mscpDir is not null
+    ? MscpDataLoader.FromDirectory(mscpDir, macMajor)
+    : MscpDataLoader.FromEmbedded(macMajor);
+
+if (args.Contains("--list-baselines"))
+{
+    Console.WriteLine("Baselines mSCP disponibles :");
+    foreach (var b in mscp.BaselineNames.OrderBy(x => x))
+        Console.WriteLine($"  - {b}");
+    return 0;
+}
+
+// Diagnostic : affiche la resolution d'une regle mSCP (check/attendu/fix) pour la version cible.
+if (GetOption(args, "--dump-rule") is { } dumpId)
+{
+    var section = mscp.ResolveBaseline(baseline).SelectMany(s => s.Rules)
+        .FirstOrDefault(r => string.Equals(r.Id, dumpId, StringComparison.OrdinalIgnoreCase));
+    if (section is null) { Console.WriteLine($"Regle '{dumpId}' absente de la baseline {baseline}."); return 1; }
+    Console.WriteLine($"Id        : {section.Id}");
+    Console.WriteLine($"Titre     : {section.Title}");
+    Console.WriteLine($"CIS       : {section.CisBenchmark}");
+    Console.WriteLine($"DISA sev. : {section.DisaSeverity}");
+    Console.WriteLine($"Attendu   : {section.Expected}");
+    Console.WriteLine($"Check     : {section.CheckShell}");
+    Console.WriteLine($"Fix       : {section.FixShell}");
+    return 0;
+}
+
+// Collecteurs natifs (equivalent BuildCollectors() cote Windows).
+var collectors = new List<IMacCollector>
 {
     new FileVaultCollector(),
     new GatekeeperCollector(),
@@ -21,16 +61,27 @@ var collectors = new IMacCollector[]
     new SoftwareUpdateCollector(),
 };
 
+// Collecteurs pilotes par la baseline mSCP (un par section).
+var sections = mscp.ResolveBaseline(baseline);
+foreach (var section in sections)
+    collectors.Add(new MscpSectionCollector(section, baseline));
+var mscpRuleCount = sections.Sum(s => s.Rules.Count);
+
 if (!quiet)
 {
     Console.WriteLine("╔══════════════════════════════════════════════════╗");
     Console.WriteLine("║   CHECKSEC for macOS — audit de securite  v0.1.0  ║");
     Console.WriteLine("╚══════════════════════════════════════════════════╝");
+    Console.WriteLine($"Baseline mSCP : {baseline} (macOS {macMajor}) — " +
+                      $"{mscpRuleCount} regles sur {sections.Count} sections, {mscp.RuleCount} regles indexees.");
+    if (mscpRuleCount == 0)
+        Console.WriteLine($"⚠  Baseline '{baseline}' inconnue. Essayez --list-baselines.");
     if (!ProcessRunner.IsMacOs)
-        Console.WriteLine("⚠  Hote non-macOS : collecteurs compiles mais non evalues (NotApplicable).\n");
+        Console.WriteLine("⚠  Hote non-macOS : collecteurs compiles mais non evalues (NotApplicable).");
+    Console.WriteLine();
 }
 
-using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 var engine = new ScanEngine(collectors);
 var result = await engine.RunAsync(cts.Token);
 
