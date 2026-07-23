@@ -76,9 +76,9 @@ internal static class ElevationHelper
 		if (args != null && args.Contains(AlreadyRelaunchedFlag))
 		{
 			MessageBoxW(IntPtr.Zero,
-				"CHECKSEC nécessite des privilèges administrateur pour analyser la configuration de sécurité du système.\n\n" +
+				"WinCheckSec nécessite des privilèges administrateur pour analyser la configuration de sécurité du système.\n\n" +
 				"L'élévation n'a pas pu être obtenue. Relancez l'application avec un compte administrateur.",
-				"CHECKSEC — Privilèges administrateur requis", 0x10u /* MB_ICONERROR */ | 0x1000u /* MB_SYSTEMMODAL */);
+				"WinCheckSec — Privilèges administrateur requis", 0x10u /* MB_ICONERROR */ | 0x1000u /* MB_SYSTEMMODAL */);
 			return false;
 		}
 
@@ -153,11 +153,11 @@ internal static class RuntimePrerequisites
 	private static void PromptDownload(string missingDll)
 	{
 		string message =
-			"CHECKSEC nécessite le composant Microsoft Visual C++ Redistributable (x64), introuvable sur ce système " +
+			"WinCheckSec nécessite le composant Microsoft Visual C++ Redistributable (x64), introuvable sur ce système " +
 			"(bibliothèque manquante : " + missingDll + ").\n\n" +
 			"Sans ce composant, l'application ne peut pas démarrer.\n\n" +
 			"Ouvrir la page de téléchargement officielle Microsoft maintenant ?";
-		int result = MessageBoxW(IntPtr.Zero, message, "CHECKSEC — Composant requis manquant",
+		int result = MessageBoxW(IntPtr.Zero, message, "WinCheckSec — Composant requis manquant",
 			MB_YESNO | MB_ICONERROR | MB_SYSTEMMODAL);
 		if (result == IDYES)
 		{

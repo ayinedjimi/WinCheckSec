@@ -6,7 +6,7 @@ namespace CHECKSEC.ViewModels;
 
 public partial class AboutViewModel : ObservableObject
 {
-	public string AppName => "CHECKSEC";
+	public string AppName => "WinCheckSec";
 
 	public string Version => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "6.0.0";
 

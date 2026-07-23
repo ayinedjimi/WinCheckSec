@@ -3,7 +3,7 @@
     x:Class="CHECKSEC.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="CHECKSEC — AYI NEDJIMI CONSULTANTS">
+    Title="WinCheckSec — AYI NEDJIMI CONSULTANTS">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <NavigationView

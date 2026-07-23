@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ CHECKSEC
+# 🛡️ WinCheckSec
 
 ### Windows 11 security posture auditor — fast, comprehensive, offline
 
@@ -22,7 +22,7 @@
 ## 📸 Preview
 
 <div align="center">
-<img src="docs/screenshots/dashboard.png" alt="CHECKSEC dashboard" width="850">
+<img src="docs/screenshots/dashboard.png" alt="WinCheckSec dashboard" width="850">
 <br><em>Dashboard — global score, run analysis, export</em>
 </div>
 
@@ -30,7 +30,7 @@
 
 ## 🎯 Overview
 
-**CHECKSEC** performs a deep audit of a **Windows 11** machine's security configuration and compares it against the **Microsoft Security Compliance Toolkit (MSCT)** and **CIS Benchmark** baselines. It produces a score, a prioritized remediation plan, and reports designed for **post‑incident / compliance review**.
+**WinCheckSec** performs a deep audit of a **Windows 11** machine's security configuration and compares it against the **Microsoft Security Compliance Toolkit (MSCT)** and **CIS Benchmark** baselines. It produces a score, a prioritized remediation plan, and reports designed for **post‑incident / compliance review**.
 
 - 🔒 **100% local & offline** — no data ever leaves the machine.
 - ⚡ **Fast** — 62 collectors run **in parallel**; a full scan takes seconds.
@@ -60,7 +60,7 @@
 ## 🚀 Installation
 
 ### Option 1 — Portable executable (recommended)
-1. Download `CHECKSEC.exe` from the [**latest release**](https://github.com/ayinedjimi/WinCheckSec/releases/latest).
+1. Download `WinCheckSec.exe` from the [**latest release**](https://github.com/ayinedjimi/WinCheckSec/releases/latest).
 2. Double‑click it. Accept the **UAC** prompt (the analysis requires administrator privileges).
 3. Click **Run analysis**.
 
@@ -68,7 +68,7 @@
 
 ### Option 2 — Headless mode (CLI / automation)
 ```powershell
-CHECKSEC.exe --headless --output report.json --format json
+WinCheckSec.exe --headless --output report.json --format json
 # formats: json | cef
 ```
 
@@ -110,7 +110,7 @@ Adding a collector = create an `ISecurityCollector` class + one line in `BuildCo
 
 ## 🔒 Privacy & ethics
 
-CHECKSEC is a **defensive** audit tool. It **reads** system state (registry, WMI, services) and **changes nothing**. No data is sent over the network. Use it only on systems you are authorized to audit.
+WinCheckSec is a **defensive** audit tool. It **reads** system state (registry, WMI, services) and **changes nothing**. No data is sent over the network. Use it only on systems you are authorized to audit.
 
 ---
 
@@ -133,5 +133,5 @@ Built by **Ayi NEDJIMI** — [**Ayi NEDJIMI Consultants**](https://ayinedjimi-co
 Released under the **MIT** license — see [`LICENSE`](LICENSE).
 
 <div align="center">
-<sub>⭐ If CHECKSEC helps you, drop a star and join the <a href="https://github.com/ayinedjimi/WinCheckSec/discussions">Discussions</a>!</sub>
+<sub>⭐ If WinCheckSec helps you, drop a star and join the <a href="https://github.com/ayinedjimi/WinCheckSec/discussions">Discussions</a>!</sub>
 </div>

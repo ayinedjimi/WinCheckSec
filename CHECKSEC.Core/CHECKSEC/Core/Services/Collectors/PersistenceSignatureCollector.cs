@@ -14,7 +14,7 @@ using Microsoft.Win32;
 
 namespace CHECKSEC.Core.Services.Collectors;
 
-// Collecteur CHECKSEC — vérifie la signature Authenticode des binaires référencés par les
+// Collecteur WinCheckSec — vérifie la signature Authenticode des binaires référencés par les
 // mécanismes de persistance (Run keys, services non-Microsoft, Winlogon) et détecte les
 // « ghost binaries » (entrée de persistance pointant vers un fichier absent du disque).
 //

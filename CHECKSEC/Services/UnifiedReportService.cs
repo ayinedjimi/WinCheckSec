@@ -24,7 +24,7 @@ public class UnifiedReportService
 				page.Content().Column(delegate(ColumnDescriptor col)
 				{
 					col.Item().PaddingTop(120f);
-					col.Item().AlignCenter().Text("CHECKSEC")
+					col.Item().AlignCenter().Text("WinCheckSec")
 						.FontSize(42f)
 						.Bold()
 						.FontColor(Colors.Blue.Darken2);
@@ -59,7 +59,7 @@ public class UnifiedReportService
 					col.Item().AlignCenter().Text($"{analysis.TotalOK} OK | {analysis.TotalWarning} Avert. | {analysis.TotalCritical} Critiques | {analysis.TotalError} Erreurs")
 						.FontSize(12f);
 					col.Item().PaddingTop(100f);
-					col.Item().AlignCenter().Text("CHECKSEC v6.0")
+					col.Item().AlignCenter().Text("WinCheckSec v6.0")
 						.FontSize(10f)
 						.FontColor(Colors.Grey.Medium);
 					col.Item().AlignCenter().Text("Document confidentiel")
@@ -77,7 +77,7 @@ public class UnifiedReportService
 				{
 					h.Item().Row(delegate(RowDescriptor r)
 					{
-						r.RelativeItem().Text("CHECKSEC — Rapport d'Audit").FontSize(12f)
+						r.RelativeItem().Text("WinCheckSec — Rapport d'Audit").FontSize(12f)
 							.Bold()
 							.FontColor(Colors.Blue.Darken2);
 						r.ConstantItem(120f).AlignRight().Text(DateTime.Now.ToString("dd/MM/yyyy"))

@@ -12,7 +12,7 @@ public class ConsolidatedExcelService
 	{
 		using XLWorkbook workbook = new XLWorkbook();
 		IXLWorksheet summarySheet = workbook.Worksheets.Add("Résumé");
-		summarySheet.Cell(1, 1).Value = "CHECKSEC — Rapport d'Audit";
+		summarySheet.Cell(1, 1).Value = "WinCheckSec — Rapport d'Audit";
 		summarySheet.Cell(1, 1).Style.Font.Bold = true;
 		summarySheet.Cell(1, 1).Style.Font.FontSize = 16.0;
 		summarySheet.Cell(3, 1).Value = "Machine :";

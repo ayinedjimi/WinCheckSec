@@ -611,7 +611,7 @@ public sealed class AnalysisService
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.AppendLine("═══════════════════════════════════════════════════════════════════════");
-		stringBuilder.AppendLine("##  CHECKSEC — RAPPORT D'AUDIT DE SÉCURITÉ WINDOWS 11");
+		stringBuilder.AppendLine("##  WinCheckSec — RAPPORT D'AUDIT DE SÉCURITÉ WINDOWS 11");
 		StringBuilder stringBuilder2 = stringBuilder;
 		StringBuilder stringBuilder3 = stringBuilder2;
 		StringBuilder.AppendInterpolatedStringHandler handler = new StringBuilder.AppendInterpolatedStringHandler(16, 1, stringBuilder2);

@@ -45,7 +45,7 @@ public static class ReportJsonBuilder
 			TimeZone = TimeZoneInfo.Local.Id,
 			Tool = new
 			{
-				Name = "CHECKSEC",
+				Name = "WinCheckSec",
 				Version = (typeof(ReportJsonBuilder).Assembly.GetName().Version?.ToString() ?? "6.0.0")
 			}
 		};

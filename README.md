@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ CHECKSEC
+# 🛡️ WinCheckSec
 
 ### Auditeur de posture de sécurité Windows 11 — rapide, complet, hors-ligne
 
@@ -22,7 +22,7 @@
 ## 📸 Aperçu
 
 <div align="center">
-<img src="docs/screenshots/dashboard.png" alt="Tableau de bord CHECKSEC" width="850">
+<img src="docs/screenshots/dashboard.png" alt="Tableau de bord WinCheckSec" width="850">
 <br><em>Tableau de bord — score global, lancement d'analyse, export</em>
 </div>
 
@@ -32,7 +32,7 @@
 
 ## 🎯 En bref
 
-**CHECKSEC** analyse en profondeur la configuration de sécurité d'un poste **Windows 11** et la compare aux référentiels **Microsoft Security Compliance Toolkit (MSCT)** et **CIS Benchmark**. Il produit un score, un plan de remédiation priorisé, et des rapports exploitables pour une **étude a posteriori** (forensique / conformité).
+**WinCheckSec** analyse en profondeur la configuration de sécurité d'un poste **Windows 11** et la compare aux référentiels **Microsoft Security Compliance Toolkit (MSCT)** et **CIS Benchmark**. Il produit un score, un plan de remédiation priorisé, et des rapports exploitables pour une **étude a posteriori** (forensique / conformité).
 
 - 🔒 **100 % local & hors‑ligne** — aucune donnée ne quitte le poste.
 - ⚡ **Rapide** — 62 collecteurs exécutés **en parallèle**, analyse complète en quelques secondes.
@@ -62,7 +62,7 @@
 ## 🚀 Installation
 
 ### Option 1 — Exécutable portable (recommandé)
-1. Téléchargez `CHECKSEC.exe` depuis la [**dernière release**](https://github.com/ayinedjimi/WinCheckSec/releases/latest).
+1. Téléchargez `WinCheckSec.exe` depuis la [**dernière release**](https://github.com/ayinedjimi/WinCheckSec/releases/latest).
 2. Double‑cliquez. Acceptez l'invite **UAC** (l'analyse nécessite des privilèges administrateur).
 3. Cliquez sur **Lancer l'analyse**.
 
@@ -70,7 +70,7 @@
 
 ### Option 2 — Mode headless (CLI / automatisation)
 ```powershell
-CHECKSEC.exe --headless --output rapport.json --format json
+WinCheckSec.exe --headless --output rapport.json --format json
 # formats : json | cef
 ```
 
@@ -124,7 +124,7 @@ Ajouter un collecteur = créer une classe `ISecurityCollector` + une ligne dans 
 
 ## 🔒 Confidentialité & éthique
 
-CHECKSEC est un outil **défensif** d'audit. Il **lit** l'état du système (registre, WMI, services) et **ne modifie rien**. Aucune donnée n'est transmise sur le réseau. À utiliser sur des systèmes que vous êtes autorisé à auditer.
+WinCheckSec est un outil **défensif** d'audit. Il **lit** l'état du système (registre, WMI, services) et **ne modifie rien**. Aucune donnée n'est transmise sur le réseau. À utiliser sur des systèmes que vous êtes autorisé à auditer.
 
 ---
 
@@ -147,5 +147,5 @@ Développé par **Ayi NEDJIMI** — [**Ayi NEDJIMI Consultants**](https://ayined
 Distribué sous licence **MIT** — voir [`LICENSE`](LICENSE).
 
 <div align="center">
-<sub>⭐ Si CHECKSEC vous est utile, laissez une étoile et rejoignez les <a href="https://github.com/ayinedjimi/WinCheckSec/discussions">Discussions</a> !</sub>
+<sub>⭐ Si WinCheckSec vous est utile, laissez une étoile et rejoignez les <a href="https://github.com/ayinedjimi/WinCheckSec/discussions">Discussions</a> !</sub>
 </div>

@@ -264,7 +264,7 @@ public sealed partial class ResultsPage : Page
 				page.DefaultTextStyle((TextStyle x) => x.FontSize(9f));
 				page.Header().Column(delegate(ColumnDescriptor col)
 				{
-					col.Item().Text("CHECKSEC — Résultats Sécurité").FontSize(18f)
+					col.Item().Text("WinCheckSec — Résultats Sécurité").FontSize(18f)
 						.Bold()
 						.FontColor(Colors.Blue.Darken2);
 					col.Item().Text($"{Environment.MachineName} — {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(10f)

@@ -112,7 +112,7 @@ public class SarifExportService
 
 				// Le registre / WMI n'a pas de fichier : on utilise un logicalLocation
 				// (nom de catégorie / collecteur) plutôt qu'une location physique.
-				string logicalName = string.IsNullOrWhiteSpace(finding.Category) ? "CHECKSEC" : finding.Category;
+				string logicalName = string.IsNullOrWhiteSpace(finding.Category) ? "WinCheckSec" : finding.Category;
 
 				// N2 : empreinte partielle stable (SHA-256 court) calculée sur ruleId + "|" + category,
 				// SANS valeur volatile, pour réduire le bruit CI entre deux runs.
@@ -245,9 +245,9 @@ public class SarifExportService
 						{
 							driver = new
 							{
-								name = "CHECKSEC",
+								name = "WinCheckSec",
 								version = toolVersion,
-								informationUri = "https://github.com/ayinedjimi/CHECKSEC",
+								informationUri = "https://github.com/ayinedjimi/WinCheckSec",
 								rules
 							}
 						},
@@ -280,7 +280,7 @@ public class SarifExportService
 		{
 			ErrorLogger.Log(LogLevel.Error, "[SarifExport] " + ex.Message, ex);
 			// Repli : un document SARIF vide mais valide.
-			return "{\n  \"$schema\": \"https://json.schemastore.org/sarif-2.1.0.json\",\n  \"version\": \"2.1.0\",\n  \"runs\": [\n    {\n      \"tool\": { \"driver\": { \"name\": \"CHECKSEC\", \"version\": \"6.3.0\", \"informationUri\": \"https://github.com/ayinedjimi/CHECKSEC\", \"rules\": [] } },\n      \"results\": []\n    }\n  ]\n}";
+			return "{\n  \"$schema\": \"https://json.schemastore.org/sarif-2.1.0.json\",\n  \"version\": \"2.1.0\",\n  \"runs\": [\n    {\n      \"tool\": { \"driver\": { \"name\": \"WinCheckSec\", \"version\": \"6.3.0\", \"informationUri\": \"https://github.com/ayinedjimi/WinCheckSec\", \"rules\": [] } },\n      \"results\": []\n    }\n  ]\n}";
 		}
 	}
 
