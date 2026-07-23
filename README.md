@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![By Ayi NEDJIMI Consultants](https://img.shields.io/badge/By-Ayi%20NEDJIMI%20Consultants-C50F1F)](https://ayinedjimi-consultants.fr)
 
-🇫🇷 **Français** · [🇬🇧 English](README.en.md)
+🇫🇷 **Français** · [🇬🇧 English](README.en.md) · 🍎 Version macOS : [**MacSecCheck**](https://github.com/ayinedjimi/MacSecCheck)
 
 </div>
 
