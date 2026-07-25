@@ -118,7 +118,7 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,8,196,0" CornerRadius="12" Padding="12,4"
                 Canvas.ZIndex="100" Background="#0078D4"
-                ToolTipService.ToolTip="Version et build de CHECKSEC">
+                ToolTipService.ToolTip="Version et build de WinCheckSec">
             <StackPanel Orientation="Horizontal" Spacing="6">
                 <FontIcon Glyph="&#xECAD;" FontSize="12" Foreground="White"/>
                 <TextBlock x:Name="VersionBadgeText" Text="v6.1"

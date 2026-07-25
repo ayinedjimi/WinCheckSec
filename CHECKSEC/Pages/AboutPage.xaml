@@ -21,7 +21,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="16">
                         <FontIcon Glyph="&#xE72E;" FontSize="40" Foreground="{StaticResource AccentBlueBrush}"/>
                         <StackPanel>
-                            <TextBlock Text="CHECKSEC" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="WinCheckSec" FontSize="28" FontWeight="Bold"/>
                             <TextBlock Text="{x:Bind ViewModel.Author}" FontSize="14"
                                        Foreground="{StaticResource AccentBlueBrush}" Margin="0,2,0,0"/>
                         </StackPanel>

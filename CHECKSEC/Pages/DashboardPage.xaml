@@ -23,7 +23,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <FontIcon Glyph="&#xE72E;" FontSize="28" Foreground="{StaticResource AccentBlueBrush}"/>
                     <StackPanel>
-                        <TextBlock Text="CHECKSEC" Style="{StaticResource TitleTextBlockStyle}"/>
+                        <TextBlock Text="WinCheckSec" Style="{StaticResource TitleTextBlockStyle}"/>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="Audit de sécurité et conformité Windows 11"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
