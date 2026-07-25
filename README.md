@@ -122,6 +122,14 @@ Ajouter un collecteur = créer une classe `ISecurityCollector` + une ligne dans 
 
 ---
 
+## 🍎 Version macOS
+
+Vous administrez aussi des Mac ? **[MacSecCheck](https://github.com/ayinedjimi/MacSecCheck)** est le compagnon macOS de WinCheckSec : une **véritable application graphique macOS** (interface Avalonia, packaging `.app` autonome), pilotée par les **478 règles NIST mSCP** (CIS, DISA STIG, NIST 800‑53, CMMC…), avec le même esprit — 100 % local, rapport forensique signé SHA‑256.
+
+👉 [**Télécharger la dernière release**](https://github.com/ayinedjimi/MacSecCheck/releases/latest)
+
+---
+
 ## 🔒 Confidentialité & éthique
 
 WinCheckSec est un outil **défensif** d'audit. Il **lit** l'état du système (registre, WMI, services) et **ne modifie rien**. Aucune donnée n'est transmise sur le réseau. À utiliser sur des systèmes que vous êtes autorisé à auditer.

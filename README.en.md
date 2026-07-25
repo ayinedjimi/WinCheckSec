@@ -108,6 +108,14 @@ Adding a collector = create an `ISecurityCollector` class + one line in `BuildCo
 
 ---
 
+## 🍎 macOS edition
+
+Also managing Macs? **[MacSecCheck](https://github.com/ayinedjimi/MacSecCheck)** is the macOS companion to WinCheckSec: a **true macOS graphical application** (Avalonia interface, self‑contained `.app` packaging), driven by the **478 NIST mSCP rules** (CIS, DISA STIG, NIST 800‑53, CMMC…), with the same philosophy — 100% local, SHA‑256 signed forensic report.
+
+👉 [**Download the latest release**](https://github.com/ayinedjimi/MacSecCheck/releases/latest)
+
+---
+
 ## 🔒 Privacy & ethics
 
 WinCheckSec is a **defensive** audit tool. It **reads** system state (registry, WMI, services) and **changes nothing**. No data is sent over the network. Use it only on systems you are authorized to audit.
